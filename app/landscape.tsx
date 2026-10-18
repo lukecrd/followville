@@ -1,6 +1,6 @@
 import React,{memo} from 'react';
 import {cellSurface} from '../lib/map-geometry';
-import {point,terrainFor,terrainMargin,terrainSeed,GROUND_COLOR,GARDEN_COLOR} from '../lib/terrain';
+import {point,terrainFor,terrainMargin,terrainSeed,GROUND_COLOR,GARDEN_COLOR,MEADOW_COLOR,SOIL_COLORS} from '../lib/terrain';
 import {buildingCells,type Building} from '../lib/town';
 export function MeadowTree({pine=false}:{pine?:boolean}){return <g><ellipse cy="3" rx="12" ry="5" fill="#3f6958" opacity=".10"/><path d="M-1 2v-28h3V2z" fill="#a38970"/>{pine?<><path d="M0-51-16-17h8l-12 10h40L8-17h8z" fill="#729885"/><path d="M0-51v44h-20l12-10h-8z" fill="#8aaf95"/></>:<><path d="M0-49c-12 0-20 9-20 22 0 12 9 18 20 18s20-6 20-18c0-13-8-22-20-22" fill="#78a088"/><path d="M0-49c-12 0-20 9-20 22 0 12 9 18 20 18z" fill="#94b69a"/></>}</g>}
 export function GroundDetails({kind,seed}:{kind:string;seed:number}){
@@ -15,8 +15,20 @@ export const Landscape=memo(function Landscape({size,layer,buildings}:{size:numb
   const min=-margin-.5,max=size+margin-.5;
   const outline=[[min,min],[max,min],[max,max],[min,max]].map(([x,y])=>point(x,y,size));
   const gardens=(buildings||[]).filter(b=>b.kind==='garden').flatMap(buildingCells);
-  return <g aria-label="Terreno uniforme e giardini verdi" pointerEvents="none">
-   <path data-terrain="ground" d={'M'+outline.map(p=>`${p.x} ${p.y}`).join('L')+'Z'} fill={GROUND_COLOR}/>
+  const town=[[-.5,-.5],[size-.5,-.5],[size-.5,size-.5],[-.5,size-.5]].map(([x,y])=>point(x,y,size)),[,right,bottom,left]=outline,depth=26*scale+8;
+  // Seeded tufts and meadow patches; roads and buildings drawn later cover the ones under them.
+  const cells=[];for(let x=-margin;x<size+margin;x++)for(let y=-margin;y<size+margin;y++)cells.push({x,y,seed:terrainSeed(x,y)});
+  const patches=cells.filter(c=>c.seed%23===0),inTown=(c:{x:number;y:number})=>c.x>=0&&c.y>=0&&c.x<size&&c.y<size,tufts=cells.filter(c=>c.seed%(inTown(c)?13:5)===0);
+  const poly=(pts:{x:number;y:number}[])=>'M'+pts.map(p=>`${p.x.toFixed(1)} ${p.y.toFixed(1)}`).join('L')+'Z';
+  return <g aria-label="Prati, campagna e giardini verdi" pointerEvents="none">
+   <path data-terrain="soil-left" d={poly([left,bottom,{x:bottom.x,y:bottom.y+depth},{x:left.x,y:left.y+depth}])} fill={SOIL_COLORS[0]}/>
+   <path data-terrain="soil-right" d={poly([bottom,right,{x:right.x,y:right.y+depth},{x:bottom.x,y:bottom.y+depth}])} fill={SOIL_COLORS[1]}/>
+   <path d={poly([left,bottom,right])} fill="none" stroke={MEADOW_COLOR} strokeWidth="5" strokeLinejoin="round"/>
+   <path data-terrain="ground" d={poly(outline)} fill={MEADOW_COLOR}/>
+   <path d={patches.map(c=>{const p=point(c.x+(c.seed%7)/7-.5,c.y+(c.seed%5)/5-.5,size),rx=(40+c.seed%30)*scale,ry=(20+c.seed%15)*scale;return `M${(p.x-rx).toFixed(1)} ${p.y.toFixed(1)}a${rx.toFixed(1)} ${ry.toFixed(1)} 0 1 0 ${(2*rx).toFixed(1)} 0a${rx.toFixed(1)} ${ry.toFixed(1)} 0 1 0 ${(-2*rx).toFixed(1)} 0`;}).join('')} fill="#cfdcb1" opacity=".55"/>
+   <path data-terrain="town" d={poly(town)} fill={GROUND_COLOR} stroke="#cfdab0" strokeWidth="3" strokeLinejoin="round"/>
+   {/* Tufts merged into two paths (one per tint) to keep the map's SVG element count low. */}
+   {['#a7ae74','#aeb778'].map((stroke,tint)=><path key={stroke} d={tufts.filter(c=>c.seed%2===tint).map(c=>{const p=point(c.x+(c.seed%3-1)*.2,c.y+(c.seed%4-1.5)*.15,size),k=scale,f=(n:number)=>(n*k).toFixed(1);return `M${(p.x-13*k).toFixed(1)} ${(p.y+2*k).toFixed(1)}l${f(-2)} ${f(-5)}m${f(2)} ${f(5)}l${f(2)} ${f(-4)}m${f(-2)} ${f(4)}v${f(-5)}M${(p.x+8*k).toFixed(1)} ${(p.y+3*k).toFixed(1)}l${f(-2)} ${f(-6)}m${f(2)} ${f(6)}l${f(3)} ${f(-5)}m${f(-3)} ${f(5)}v${f(-6)}`;}).join('')} fill="none" stroke={stroke} strokeWidth={scale} strokeLinecap="round" opacity=".75"/>)}
    {gardens.length>0&&<path data-terrain="garden" d={cellSurface(gardens,size)} fill={GARDEN_COLOR} stroke={GARDEN_COLOR} strokeWidth=".4"/>}
   </g>;
  }

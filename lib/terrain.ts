@@ -1,5 +1,5 @@
 import {BASE_SIZE} from './town';
-export const GROUND_COLOR='#e5e3d7';
+export const GROUND_COLOR='#e6ead3',MEADOW_COLOR='#d8e2bf',SOIL_COLORS=['#d9c8a0','#c4b088'];
 export const GARDEN_COLOR='#b9d2a5';
 export const point=(x:number,y:number,size=BASE_SIZE)=>({x:800+(x-y)*720/size,y:110+(x+y)*360/size});
 export const terrainMargin=(size:number)=>Math.max(6,Math.round(size/4));
