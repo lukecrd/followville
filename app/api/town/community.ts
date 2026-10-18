@@ -1,5 +1,5 @@
 import {GARDEN_ITEMS,buildingCells,canPlace,type Kind,type Building,type Resident,type HousingUnit} from '../../../lib/town';
-import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,CIVIC_KINDS,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
+import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
 import {residentFrame,simulationIndex,missionStage} from '../../../lib/simulation';
 import {DISTRICTS} from '../../../lib/district-labels';
 export class CommunityError extends Error{constructor(message:string,public status=400){super(message);}}
@@ -38,15 +38,18 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
  const r=await d.prepare('SELECT username,wallet,job,paid_at AS paidAt,avatar,car_level AS carLevel FROM residents WHERE username=? AND EXISTS(SELECT 1 FROM home_units WHERE username=?)').bind(username,username).first<Resident>();if(!r)throw new CommunityError('Collega prima un abitante con una casa.',403);
  if(action==='mission-start'){
   const window=dailyWindow(now),mission=MISSION_CATALOG.find(m=>m.id===data.missionId);if(!mission||!dailyMissionIds(window.day).includes(mission.id))throw new CommunityError('Questa missione non fa parte della giornata attuale.');
-  const buildings=await d.prepare('SELECT id,x,y,kind,username,color,bridge_axis AS bridgeAxis,bridge_span AS bridgeSpan FROM buildings').all<Building>(),units=await d.prepare('SELECT id,building_id AS buildingId,unit,username,color FROM home_units').all<HousingUnit>(),index=simulationIndex(buildings.results,units.results),target=missionTarget(mission.kind,buildings.results);
+  const buildings=await d.prepare('SELECT id,x,y,kind,username,color,bridge_axis AS bridgeAxis,bridge_span AS bridgeSpan FROM buildings').all<Building>(),units=await d.prepare('SELECT id,building_id AS buildingId,unit,username,color FROM home_units').all<HousingUnit>(),index=simulationIndex(buildings.results,units.results);
+  const size=sizeOfTown(await d.prepare('SELECT map_size AS size FROM town_settings WHERE id=1').first<{size:number}>()),frame=residentFrame(r,buildings.results,now,size,units.results),from={x:Math.round(frame?.x??index.byUser.get(username)!.x),y:Math.round(frame?.y??index.byUser.get(username)!.y)},target=missionTarget(mission.kind,buildings.results,from);
   if(!target)throw new CommunityError('Questo servizio non è disponibile in città. Chiedi all’amministratore di costruirlo.');
-  const size=sizeOfTown(await d.prepare('SELECT map_size AS size FROM town_settings WHERE id=1').first<{size:number}>()),frame=residentFrame(r,buildings.results,now,size,units.results),from={x:Math.round(frame?.x??index.byUser.get(username)!.x),y:Math.round(frame?.y??index.byUser.get(username)!.y)},stage=missionStage(from,target,index,size,mission.activity),ready=now+Math.ceil(stage.travelMs)+mission.seconds*1000;
+  const stage=missionStage(from,target,index,size,mission.activity),ready=now+Math.ceil(stage.travelMs)+mission.seconds*1000;
   if(ready>=window.resetsAt)throw new CommunityError('Le missioni stanno per rinnovarsi: torna dopo mezzanotte.');
   const result=await d.prepare('INSERT OR IGNORE INTO daily_missions (id,username,day,mission_id,building_id,started_at,ready_at,expires_at,reward,from_x,from_y) SELECT ?,?,?,?,?,?,?,?,?,?,? WHERE NOT EXISTS(SELECT 1 FROM daily_missions WHERE username=? AND claimed_at IS NULL AND expires_at>?)').bind(crypto.randomUUID(),username,window.day,mission.id,target.id,now,ready,window.resetsAt,mission.reward,from.x,from.y,username,now).run();
   if(!result.meta.changes)throw new CommunityError('Missione già svolta oggi oppure un’altra missione è ancora in corso.',409);return true;
  }
  if(action==='mission-claim'){
-  const result=await d.batch([d.prepare('UPDATE daily_missions SET claimed_at=? WHERE id=? AND username=? AND claimed_at IS NULL AND ready_at<=? AND expires_at>?').bind(now,String(data.id||''),username,now,now),d.prepare('UPDATE residents SET wallet=wallet+(SELECT reward FROM daily_missions WHERE id=? AND username=?) WHERE username=? AND changes()>0').bind(String(data.id||''),username,username)]);
+  const result=await d.batch([d.prepare('UPDATE daily_missions SET claimed_at=? WHERE id=? AND username=? AND claimed_at IS NULL AND ready_at<=? AND expires_at>?').bind(now,String(data.id||''),username,now,now),d.prepare('UPDATE residents SET wallet=wallet+(SELECT reward FROM daily_missions WHERE id=? AND username=?) WHERE username=? AND changes()>0').bind(String(data.id||''),username,username),
+   // Missions run one at a time, so only one claim can be the third of the day.
+   d.prepare('UPDATE residents SET wallet=wallet+? WHERE username=? AND changes()>0 AND (SELECT COUNT(*) FROM daily_missions WHERE username=? AND claimed_at IS NOT NULL AND day=(SELECT day FROM daily_missions WHERE id=?))=3').bind(MISSION_DAY_BONUS,username,username,String(data.id||''))]);
   if(!result[0].meta.changes)throw new CommunityError('Missione ancora in corso, scaduta o ricompensa già riscossa.',409);return true;
  }
  const requested=Number(data.amount),requestId=String(data.requestId||'');if(!Number.isSafeInteger(requested)||requested<1||requested>50||!/^[a-f0-9-]{36}$/.test(requestId))throw new CommunityError('Scegli un contributo da 1 a 50 monete.');
@@ -61,7 +64,8 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
   ...cells.map(c=>d.prepare('INSERT INTO building_tiles (id,building_id,x,y) SELECT ?,?,?,? WHERE EXISTS(SELECT 1 FROM buildings WHERE id=?)').bind(buildingId+':'+c.x+','+c.y,buildingId,c.x,c.y,buildingId)),
   d.prepare('UPDATE neighborhood_projects SET completed_at=? WHERE id=? AND raised=goal AND completed_at IS NULL AND EXISTS(SELECT 1 FROM buildings WHERE id=?)').bind(now,project.id,buildingId)
  ]:[
-  d.prepare('INSERT OR IGNORE INTO garden_decorations (id,garden_id,username,item) SELECT ?,garden_id,?,item FROM neighborhood_projects WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0').bind('project-'+project.id,username,project.id),
+  // Shared artwork belongs to the neighborhood, not to whoever made the final donation.
+  d.prepare("INSERT OR IGNORE INTO garden_decorations (id,garden_id,username,item) SELECT ?,garden_id,'quartiere',item FROM neighborhood_projects WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0").bind('project-'+project.id,project.id),
   d.prepare('UPDATE neighborhood_projects SET completed_at=? WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0').bind(now,project.id)
  ];
  const result=await d.batch([

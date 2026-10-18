@@ -87,13 +87,13 @@ export async function POST(req:Request){
  if(!result.meta.changes)return json({error:'Non ci sono posti disponibili per questo mestiere.'},409);
  }else if(data.action==='approve'){
  const job=JOBS.find(j=>j.id===r.candidate);if(!job)return json({error:'Nessuna candidatura in attesa.'},400);
- const settled=payroll(r,now);const result=await d.prepare('UPDATE residents SET job=?,candidate=NULL,job_ms=0,paid_at=?,wallet=wallet+?,pay_credit=? WHERE username=? AND candidate=? AND paid_at=? AND pay_credit=? AND (SELECT COUNT(*) FROM residents WHERE job=? AND username IN (SELECT username FROM home_units)) < ?*(SELECT COUNT(*) FROM buildings WHERE kind=?)').bind(job.id,now,settled.amount,settled.credit,username,job.id,r.paidAt,r.payCredit||0,job.id,job.slots,job.service).run();
+ const settled=payroll(r,now);const [result]=await d.batch([d.prepare('UPDATE residents SET job=?,candidate=NULL,job_ms=0,paid_at=?,wallet=wallet+?,pay_credit=? WHERE username=? AND candidate=? AND paid_at=? AND pay_credit=? AND (SELECT COUNT(*) FROM residents WHERE job=? AND username IN (SELECT username FROM home_units)) < ?*(SELECT COUNT(*) FROM buildings WHERE kind=?)').bind(job.id,now,settled.net,settled.credit,username,job.id,r.paidAt,r.payCredit||0,job.id,job.slots,job.service),d.prepare('UPDATE town_settings SET coins=coins+? WHERE id=1 AND changes()>0').bind(settled.tax)]);
  if(!result.meta.changes)return json({error:'Il posto non è più disponibile. Aggiorna la candidatura.'},409);
  }else if(data.action==='reject'){
  await d.prepare('UPDATE residents SET candidate=NULL WHERE username=?').bind(username).run();
  }else if(data.action==='collect'){
  const earned=payroll(r,now);if(earned.amount<=0)return json({error:'Non c’è ancora una moneta da riscuotere. Lo stipendio matura durante l’orario di lavoro, dal lunedì al venerdì, 09:00–17:00 nel gioco.'},400);
- const result=await d.prepare('UPDATE residents SET wallet=wallet+?,job_ms=job_ms+?,paid_at=?,pay_credit=? WHERE username=? AND paid_at=? AND job=? AND pay_credit=?').bind(earned.amount,earned.workMs,now,earned.credit,username,r.paidAt,r.job,r.payCredit||0).run();
+ const [result]=await d.batch([d.prepare('UPDATE residents SET wallet=wallet+?,job_ms=job_ms+?,paid_at=?,pay_credit=? WHERE username=? AND paid_at=? AND job=? AND pay_credit=?').bind(earned.net,earned.workMs,now,earned.credit,username,r.paidAt,r.job,r.payCredit||0),d.prepare('UPDATE town_settings SET coins=coins+? WHERE id=1 AND changes()>0').bind(earned.tax)]);
  if(!result.meta.changes)return json({error:'Stipendio già riscosso. Aggiorna la città.'},409);
  }else if(data.action==='avatar'){
  const color=String(data.color);if(!colors.includes(color))return json({error:'Colore non valido.'},400);

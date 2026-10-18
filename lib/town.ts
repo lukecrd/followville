@@ -98,8 +98,10 @@ export const JOBS=[
 export const SENIORITY=[{hours:0,bonus:0,title:'Base'},{hours:40,bonus:1,title:'Avanzata'},{hours:120,bonus:2,title:'Senior'},{hours:240,bonus:3,title:'Master'}] as const;
 export function seniority(jobMs=0){const hours=Math.floor(jobMs/GAME_HOUR_MS),level=SENIORITY.filter(s=>hours>=s.hours).length-1;return {...SENIORITY[level],level,hours,next:SENIORITY[level+1]?.hours??null};}
 // shortcut: the bonus uses seniority stored at the last collection, so a level reached mid-period pays from the next collection.
-export function payroll(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,total=credit+workMs*(job?job.wage+seniority(r.jobMs).bonus:0);return {amount:job?Math.floor(total/GAME_HOUR_MS):0,credit:job?total%GAME_HOUR_MS:credit,workMs,from,capped:r.paidAt<from};}
-export function salary(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){return payroll(r,now).amount;}
+export function payroll(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,total=credit+workMs*(job?job.wage+seniority(r.jobMs).bonus:0);const amount=job?Math.floor(total/GAME_HOUR_MS):0,tax=Math.floor(amount*CIVIC_TAX);return {amount,tax,net:amount-tax,credit:job?total%GAME_HOUR_MS:credit,workMs,from,capped:r.paidAt<from};}
+// Share of every salary withheld for the town treasury, so residents' work funds new buildings.
+export const CIVIC_TAX=.15;
+export function salary(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){return payroll(r,now).net;}
 export function shiftsToAfford(price:number,hourlyWage:number){return Math.ceil(price/(WORK_HOURS*hourlyWage));}
 export const SHOP=[
  {id:'flower-box',name:'Balcone fiorito',price:90,type:'home',desc:'Fiori alle finestre della tua casa.',bit:1},
