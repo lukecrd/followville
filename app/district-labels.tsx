@@ -1,0 +1,4 @@
+import {memo,useMemo} from 'react';
+import {Building} from '../lib/town';
+import {layoutDistrictLabels} from '../lib/district-labels';
+export const DistrictLabels=memo(function DistrictLabels({buildings,size}:{buildings:Building[];size:number}){const labels=useMemo(()=>layoutDistrictLabels(buildings,size),[buildings,size]);return <g className="district-labels" pointerEvents="none" aria-label="Quartieri della città">{labels.map(label=><g key={label.name} transform={`translate(${label.x} ${label.y})`}><rect width={label.width} height={label.height} rx="7" fill="#f7faf1" stroke="#c3d1bb" strokeWidth=".8"/><text x={label.width/2} y="16" textAnchor="middle" fontFamily="Inter,ui-sans-serif,system-ui,sans-serif" fontSize="10.5" fontWeight="650" letterSpacing=".8" fill="#4a694f">{label.name}</text></g>)}</g>});

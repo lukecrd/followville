@@ -1,0 +1,1 @@
+ALTER TABLE `town_settings` ADD `housing_version` integer DEFAULT 0 NOT NULL;

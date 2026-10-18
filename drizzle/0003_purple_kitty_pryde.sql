@@ -1,0 +1,1 @@
+ALTER TABLE `town_settings` ADD `admin_user_id` text;

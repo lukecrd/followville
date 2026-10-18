@@ -1,0 +1,2 @@
+import {Resident} from './town';
+export function findCharacters(residents:Resident[],query:string,limit=20){const q=query.trim().replace(/^@/,'').toLowerCase();if(!q)return residents.slice(0,limit);return residents.filter(r=>r.username.toLowerCase().includes(q)).sort((a,b)=>{const rank=(s:string)=>s.toLowerCase()===q?0:s.toLowerCase().startsWith(q)?1:2;return rank(a.username)-rank(b.username)||a.username.localeCompare(b.username);}).slice(0,limit);}

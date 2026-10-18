@@ -1,0 +1,11 @@
+import {BASE_SIZE,isRoad} from './town';
+export type RoadCell={x:number;y:number;kind?:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null};
+export const cellKey=(x:number,y:number)=>`${x},${y}`;
+export const ROAD_DIRECTIONS=[{x:1,y:0},{x:0,y:1},{x:-1,y:0},{x:0,y:-1}];
+export function transportCells(extra:RoadCell[]){return extra.flatMap(c=>Array.from({length:c.kind==='bridge'?Math.max(1,c.bridgeSpan||1):1},(_,i)=>({...c,x:c.x+(c.bridgeAxis==='y'?0:i),y:c.y+(c.bridgeAxis==='y'?i:0),bridgeSpan:1})));}
+export function roadCells(size=BASE_SIZE,extra:RoadCell[]=[]){const cells=new Set<string>();for(let x=0;x<size;x++)for(let y=0;y<size;y++)if(isRoad(x,y))cells.add(cellKey(x,y));for(const c of transportCells(extra))if(c.x>=0&&c.y>=0&&c.x<size&&c.y<size)cells.add(cellKey(c.x,c.y));return cells;}
+export function nextToRoad(x:number,y:number,cells:Set<string>){return ROAD_DIRECTIONS.some(d=>cells.has(cellKey(x+d.x,y+d.y)));}
+// A bridge has two road entrances; its sides are protected by parapets.
+export function roadConnection(a:RoadCell,b:RoadCell,extra:Map<string,RoadCell>){const dx=b.x-a.x,dy=b.y-a.y;if(Math.abs(dx)+Math.abs(dy)!==1)return false;return [a,b].every(c=>{const bridge=extra.get(cellKey(c.x,c.y));return bridge?.kind!=='bridge'||!bridge.bridgeAxis||(bridge.bridgeAxis==='x'?dy===0:dx===0);});}
+export function roadNeighbors(c:RoadCell,cells:Set<string>,extra:Map<string,RoadCell>){return ROAD_DIRECTIONS.map(d=>({x:c.x+d.x,y:c.y+d.y})).filter(p=>cells.has(cellKey(p.x,p.y))&&roadConnection(c,p,extra));}
+export function connectedRoadCells(size:number,extra:RoadCell[]){const cells=roadCells(size,extra),links=new Map(transportCells(extra).map(c=>[cellKey(c.x,c.y),c])),visited=new Set<string>(),queue:RoadCell[]=[{x:4,y:1}];visited.add(cellKey(4,1));for(let i=0;i<queue.length;i++){const c=queue[i];for(const p of roadNeighbors(c,cells,links)){const {x,y}=p,key=cellKey(x,y);if(cells.has(key)&&!visited.has(key)){visited.add(key);queue.push({x,y});}}}return {cells:visited,points:queue,links};}
