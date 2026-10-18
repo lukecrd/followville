@@ -1,4 +1,6 @@
 import {BASE_SIZE} from './town';
+export const GROUND_COLOR='#e5e3d7';
+export const GARDEN_COLOR='#b9d2a5';
 export const point=(x:number,y:number,size=BASE_SIZE)=>({x:800+(x-y)*720/size,y:110+(x+y)*360/size});
 export const terrainMargin=(size:number)=>Math.max(6,Math.round(size/4));
 export function terrainSeed(x:number,y:number){return (Math.imul(x+83,73428767)^Math.imul(y+61,912931))>>>0;}

@@ -1,0 +1,74 @@
+/* FollowVille — contemporary miniature city, ink and turquoise controls. */
+:root{--ink:#243c51;--muted:#6c8293;--green:#197f86;--line:#dce5ec;--paper:#fff;--cream:#f0f5f8;--accent:#137e88;--nav:#20384b;--soft:#edf5f7}
+body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-feature-settings:"cv11","ss01"}
+.fullscreen-city .game{background:#edf2f6}
+.fullscreen-city .city-hud,.fullscreen-city .wallet-hud,.fullscreen-city .life-panel,.fullscreen-city .build-tray,.fullscreen-city .role-popover,.fullscreen-city .map-controls.map-zoom{background:#fffffff5;border:1px solid #ffffff;box-shadow:0 8px 32px #20384b12,0 1px 4px #20384b08;backdrop-filter:blur(12px)}
+.fullscreen-city .city-hud{padding:16px 19px;border-radius:20px}
+.fullscreen-city .hud-leaf{background:var(--nav);color:#75ddd4;border-radius:13px;width:40px;height:43px;box-shadow:inset 0 1px #ffffff20}
+.fullscreen-city .hud-brand>div>span{color:#6a8295;font-size:9px;letter-spacing:2.3px;font-weight:700}
+.fullscreen-city .city-hud h1{color:#263e53;font-size:23px;font-weight:700;letter-spacing:-.9px}
+.fullscreen-city .hud-meta{color:#677f92;font-size:10px;gap:12px;margin-top:11px;margin-left:52px;font-variant-numeric:tabular-nums}
+.fullscreen-city .hud-meta i{background:#cad7e0}
+.fullscreen-city .wallet-hud{padding:16px 20px;border-radius:20px;min-width:162px}
+.fullscreen-city .wallet-hud>span{color:#637c90;letter-spacing:1.4px;font-size:8px;font-weight:700}
+.fullscreen-city .wallet-hud>b{color:#263f54;font-size:27px;letter-spacing:-1px;font-weight:700;font-variant-numeric:tabular-nums}
+.fullscreen-city .wallet-hud>small{color:#718797;font-size:9px}
+.fullscreen-city .compact-dock{background:#20384bf5;border:1px solid #ffffff28;border-radius:22px;padding:8px 10px;box-shadow:0 12px 35px #1b334536,inset 0 1px #ffffff12;backdrop-filter:blur(14px)}
+.fullscreen-city .compact-dock .dock-nav{gap:4px}
+.fullscreen-city .compact-dock .dock-nav>button{position:relative;color:#b6c9d6;border-radius:14px;height:54px;min-width:60px;width:68px;padding:7px 6px;font-size:9px;font-weight:550;gap:6px;transition:background .16s,color .16s}
+.fullscreen-city .compact-dock .dock-nav>button.active,.fullscreen-city.player-view .compact-dock .dock-nav>button.active{background:#79ded3;color:#153c46;box-shadow:inset 0 1px #ffffff60}
+.fullscreen-city .compact-dock .dock-nav>button:hover:not(.active){background:#ffffff14;color:#fff}
+.fullscreen-city .compact-dock .dock-mode-button{background:#ffffff0d;color:#e0edf4}
+.fullscreen-city .compact-dock .dock-separator{background:#ffffff20;margin:0 5px;height:28px}
+.fullscreen-city .compact-dock .dock-icon svg{stroke-width:1.8}
+.fullscreen-city .dock-icon>i{background:#f7bd72;border-color:#20384b}
+.fullscreen-city .map-controls.map-zoom{border-radius:15px;padding:5px;bottom:96px}
+.fullscreen-city .map-zoom button{color:#46677e;border-radius:10px}
+.fullscreen-city .map-zoom button:hover{background:#edf5f7;color:#167e88}
+.fullscreen-city .map-zoom label>span{color:#5d788e;font-size:9px}.fullscreen-city .map-zoom input{accent-color:#17818a}
+.terrain-legend{background:#ffffffd9;color:#5b768b;border:1px solid #fff;border-radius:10px;padding:8px 12px;font-size:9px}
+.fullscreen-city .life-panel,.fullscreen-city .build-tray{border-radius:22px;bottom:101px;scrollbar-color:#c5d6df transparent}
+.fullscreen-city .life-panel{padding:24px 26px}
+.fullscreen-city .life-heading h2,.fullscreen-city .modal h2{color:#263e53;font-size:25px;letter-spacing:-.85px;font-weight:700}
+.fullscreen-city .life-heading>button,.fullscreen-city .close-catalog{color:#647e91;background:#edf3f7;border-radius:10px}
+.fullscreen-city .life-heading>button:hover,.fullscreen-city .close-catalog:hover{background:#dfeef2;color:#147b85}
+.fullscreen-city .eyebrow,.fullscreen-city .life-section-title{color:#627e92;font-size:9px;letter-spacing:1.4px;font-weight:650}
+.fullscreen-city .panel-intro,.fullscreen-city .modal-intro,.fullscreen-city .search-help{color:#6c8191;font-size:12px;line-height:1.75}
+.fullscreen-city .primary,.fullscreen-city .life-panel .primary,.fullscreen-city .modal .primary{background:#197f88;color:white;border-radius:11px;box-shadow:0 3px 8px #197f8815;font-weight:600}
+.fullscreen-city .primary:hover{background:#126c76}
+.fullscreen-city .small-button{background:#edf5f7;border-color:#d5e7eb;color:#286d7c;border-radius:9px;font-weight:550}
+.fullscreen-city .small-button:hover{background:#dfedf1}
+.fullscreen-city .admin-treasury,.fullscreen-city .personal-balance,.fullscreen-city .player-identity,.fullscreen-city .mayor-office,.fullscreen-city .work-clock{background:#edf5f7;border-color:#dce9ef;border-radius:13px;color:#50778a}
+.fullscreen-city .admin-treasury b,.fullscreen-city .personal-balance>b{color:#254c64}
+.fullscreen-city .admin-resident,.fullscreen-city .job-card,.fullscreen-city .shop-card,.fullscreen-city .garden-item,.fullscreen-city .board-message{border-color:#e0e8ee;background:#fbfdff;border-radius:14px}
+.fullscreen-city .admin-resident-name b,.fullscreen-city .assignment-row b,.fullscreen-city .job-card h3,.fullscreen-city .shop-card h3,.fullscreen-city .digital-profile h3,.fullscreen-city .garden-item h3{color:#304e65;font-weight:650}
+.fullscreen-city .admin-resident-name small,.fullscreen-city .assignment-row small,.fullscreen-city .job-card-top small,.fullscreen-city .shop-card p,.fullscreen-city .job-card-bottom>span,.fullscreen-city .garden-item p{color:#73899a}
+.fullscreen-city .job-card-top>b,.fullscreen-city .shop-card-bottom>b,.fullscreen-city .garden-item b{color:#247987}
+.fullscreen-city .text-input,.fullscreen-city .life-panel .text-input,.fullscreen-city .modal .text-input,.fullscreen-city .catalog-search{background:#f7fafc;border-color:#dbe6ed;border-radius:11px;color:#35566e}
+.fullscreen-city .text-input:focus,.fullscreen-city .catalog-search:focus-within{outline:2px solid #3aa6af55;outline-offset:2px;border-color:#55a4b2}
+.fullscreen-city .catalog-search{padding:10px 12px;color:#7a94a7}.fullscreen-city .catalog-search input{font-size:12px;color:#35566e}
+.fullscreen-city .category-tabs{gap:10px}.fullscreen-city .category-tabs button{padding:14px 10px 12px;color:#6f8799;font-size:11px;font-weight:600;border-bottom-width:2px}
+.fullscreen-city .category-tabs button.selected{color:#147d87;border-color:#17838c}
+.fullscreen-city .landmark-catalog{gap:9px}
+.fullscreen-city .landmark-catalog .catalog-item{border:1px solid #e2eaf0;background:#f5f9fc;border-radius:14px;transition:border-color .15s,background .15s}
+.fullscreen-city .landmark-catalog .catalog-item:hover{background:#eaf5f7;border-color:#82bec7}
+.fullscreen-city .catalog-info b{color:#31526b;font-weight:650}.fullscreen-city .catalog-info small{color:#247986;font-weight:600}.fullscreen-city .catalog-meta,.fullscreen-city .catalog-footer{color:#7b90a0}
+.fullscreen-city .note,.fullscreen-city .life-panel .note,.fullscreen-city .board-form,.fullscreen-city .salary-box,.fullscreen-city .current-job,.fullscreen-city .community-score{background:#eff6f8;border-color:#dce9ef;color:#5d7c90;border-radius:12px}
+.fullscreen-city .mayor-office>span,.fullscreen-city .job-symbol,.fullscreen-city .garden-symbol{background:#dfedf2;color:#3d8694}
+.fullscreen-city .board-message.official{border-left-color:#27929b;background:#f3fafb}.fullscreen-city .board-message>p{color:#5b7589}.fullscreen-city .board-message-meta{color:#6c899d}
+.fullscreen-city .role-popover{border-radius:18px}.fullscreen-city .role-popover b{color:#31536c}.fullscreen-city .role-popover small{color:#7a91a2}.fullscreen-city .role-popover>button.selected,.fullscreen-city .role-popover>button:hover{background:#edf6f8}
+.fullscreen-city .modal{background:#ffffff;border-color:#e3ebf0;border-radius:24px;box-shadow:0 25px 90px #19364b30}.fullscreen-city .modal-backdrop{background:#19364b52}
+.fullscreen-city .tool-hint{background:#203e53f5;bottom:101px;border-radius:13px}
+.fullscreen-city .toast{background:#fff;color:#31586e;border-color:#dbe8ee;box-shadow:0 8px 26px #20384b16;border-radius:13px}
+.fullscreen-city button:focus-visible,.fullscreen-city a:focus-visible{outline:2px solid #35a7b4;outline-offset:3px}
+.plot.buildable{stroke:#4b9fae;fill:#48b7b90a}.plot.buildable:hover,.plot.buildable:focus-visible{fill:#a4ece066;stroke:#1b8999}
+.building:hover .building-footprint,.building:focus-visible .building-footprint{fill:#d5f6ed99;stroke:#4b9ca5}
+@media(max-width:1250px){.terrain-legend{bottom:103px}}
+@media(max-width:600px){
+ .fullscreen-city .city-hud{padding:12px 13px;border-radius:16px}.fullscreen-city .city-hud h1{font-size:17px;letter-spacing:-.55px}.fullscreen-city .hud-brand>div>span{font-size:7px;letter-spacing:1.6px}.fullscreen-city .hud-meta{font-size:8px;gap:7px;margin:8px 0 0}
+ .fullscreen-city .wallet-hud{padding:12px 13px;border-radius:16px;min-width:120px}.fullscreen-city .wallet-hud>span{font-size:6px;letter-spacing:.7px}.fullscreen-city .wallet-hud>b{font-size:23px}.fullscreen-city .wallet-hud>small{font-size:7px}
+ .fullscreen-city .compact-dock{padding:6px;border-radius:18px;bottom:max(10px,env(safe-area-inset-bottom))}.fullscreen-city .compact-dock .dock-nav{gap:1px}.fullscreen-city .compact-dock .dock-nav>button{min-width:37px;flex:0 0 37px;width:37px;height:47px;border-radius:11px;font-size:6.5px;padding:5px 1px;gap:5px}.fullscreen-city .compact-dock .dock-separator{margin:0 2px;height:23px}
+ .fullscreen-city .life-panel,.fullscreen-city .build-tray{bottom:84px;border-radius:18px}.fullscreen-city .life-panel{padding:20px}.fullscreen-city .life-heading h2{font-size:23px}.fullscreen-city .category-tabs{gap:5px}.fullscreen-city .category-tabs button{font-size:9px;padding:12px 5px 10px}
+ .fullscreen-city .map-controls.map-zoom{bottom:calc(81px + env(safe-area-inset-bottom));padding:3px}.terrain-legend{font-size:7px;padding:6px 8px;bottom:88px;left:12px}.fullscreen-city .tool-hint{bottom:140px}
+}
+@media(prefers-reduced-motion:reduce){.fullscreen-city button,.fullscreen-city .catalog-item{transition:none}}
