@@ -11,3 +11,4 @@
 .community-empty{text-align:center;padding:20px 10px;color:#7798a7;border:1px dashed #d5e4eb;border-radius:15px;margin:15px 0}.community-empty>svg{margin:0 auto 10px;color:#4d94a1}.community-empty h3{font-size:15px;color:#3e667d;margin:6px 0 8px}.community-empty p{font-size:11px;line-height:1.8;margin:0}.community-empty .primary{font-size:12px;margin-top:15px}.community-panel>.quiet-text{font-size:10px;line-height:1.75;margin-bottom:0}
 @media(max-width:600px){.quest-card,.project-card{padding:13px}.quest-card h3,.project-card h3{font-size:12px}.quest-card p,.project-card p{font-size:10px}.quest-reward{font-size:17px}.community-symbol{width:32px;height:35px;border-radius:10px}.quest-summary{padding:12px}.quest-card-footer{gap:7px}.project-district{font-size:7px;letter-spacing:.5px}}
 @media(prefers-reduced-motion:reduce){.community-progress>i{transition:none}}
+.project-plot{display:grid;grid-template-columns:1fr 1fr;gap:8px}

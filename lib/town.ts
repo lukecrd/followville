@@ -36,7 +36,7 @@ export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
 export type Building={id:string;x:number;y:number;kind:Kind;username:string|null;color:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null};
-export type Resident={mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
+export type Resident={mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
 export type Decoration={id:string;gardenId:string;username:string;item:string};
 export type Purchase={username:string;item:string};
 export type BoardMessage={id:string;buildingId:string;title:string;body:string;authorLabel:string;official:boolean;pinned:boolean;createdAt:number;own:boolean};
@@ -94,8 +94,12 @@ export const JOBS=[
  {id:'coach',name:'Istruttore sportivo',service:'sports',wage:4,slots:4,desc:'Organizza allenamenti e corsi al centro sportivo.'},
  {id:'clerk',name:'Commerciante',service:'market',wage:3,slots:3,desc:'La vita dietro al bancone.'},
 ] as const;
-export function payroll(r:Pick<Resident,'job'|'paidAt'|'payCredit'>,now:number){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,total=credit+workMs*(job?.wage||0);return {amount:job?Math.floor(total/GAME_HOUR_MS):0,credit:job?total%GAME_HOUR_MS:credit,workMs,from,capped:r.paidAt<from};}
-export function salary(r:Pick<Resident,'job'|'paidAt'|'payCredit'>,now:number){return payroll(r,now).amount;}
+// Seniority: worked game hours in the current job unlock a wage bonus; changing job resets it.
+export const SENIORITY=[{hours:0,bonus:0,title:'Base'},{hours:40,bonus:1,title:'Avanzata'},{hours:120,bonus:2,title:'Senior'},{hours:240,bonus:3,title:'Master'}] as const;
+export function seniority(jobMs=0){const hours=Math.floor(jobMs/GAME_HOUR_MS),level=SENIORITY.filter(s=>hours>=s.hours).length-1;return {...SENIORITY[level],level,hours,next:SENIORITY[level+1]?.hours??null};}
+// shortcut: the bonus uses seniority stored at the last collection, so a level reached mid-period pays from the next collection.
+export function payroll(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,total=credit+workMs*(job?job.wage+seniority(r.jobMs).bonus:0);return {amount:job?Math.floor(total/GAME_HOUR_MS):0,credit:job?total%GAME_HOUR_MS:credit,workMs,from,capped:r.paidAt<from};}
+export function salary(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){return payroll(r,now).amount;}
 export function shiftsToAfford(price:number,hourlyWage:number){return Math.ceil(price/(WORK_HOURS*hourlyWage));}
 export const SHOP=[
  {id:'flower-box',name:'Balcone fiorito',price:90,type:'home',desc:'Fiori alle finestre della tua casa.',bit:1},

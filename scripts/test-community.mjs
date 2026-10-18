@@ -3,7 +3,7 @@ import {readFile,readdir,mkdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),w=createRequire(require.resolve('wrangler/package.json')),{build}=w('esbuild'),{Miniflare}=w('miniflare');
 await mkdir('.sites-runtime',{recursive:true});
-await build({stdin:{contents:"export {MapScene} from './app/town-art';export * from './lib/community';export {CommunityPanel} from './app/community-panel';export {prepareResident,sampleResident,simulationIndex} from './lib/simulation';",resolveDir:process.cwd()},bundle:true,packages:'external',platform:'node',format:'cjs',outfile:'.sites-runtime/community-check.cjs',jsx:'automatic'});
+await build({stdin:{contents:"export {MapScene} from './app/town-art';export * from './lib/community';export {CommunityPanel} from './app/community-panel';export {prepareResident,sampleResident,simulationIndex} from './lib/simulation';export {buildable,buildingCells,payroll,seniority} from './lib/town';",resolveDir:process.cwd()},bundle:true,packages:'external',platform:'node',format:'cjs',outfile:'.sites-runtime/community-check.cjs',jsx:'automatic'});
 const api=require('../.sites-runtime/community-check.cjs');
 for(const [instant,day,reset]of [
  ['2026-10-18T21:59:59Z','2026-10-18','2026-10-18T22:00:00Z'],['2026-10-18T22:00:00Z','2026-10-19','2026-10-19T22:00:00Z'],
@@ -54,6 +54,21 @@ try{
  for(const section of ['missions','projects']){const html=renderToStaticMarkup(React.createElement(api.CommunityPanel,{town,section,admin:false,active:'alice',busy:false,onClose(){},onSelect(){},onLocate(){},onClaim(){},onAction(){}}));assert.ok(html.includes(section==='missions'?'Le tue missioni':'REALIZZATO'));assert.ok(!html.includes('Avvia un progetto'));}
  const adminHtml=renderToStaticMarkup(React.createElement(api.CommunityPanel,{town,section:'projects',admin:true,active:'alice',busy:false,onClose(){},onSelect(){},onLocate(){},onClaim(){},onAction(){}}));assert.ok(adminHtml.includes('Avvia un progetto'));assert.ok(!adminHtml.includes('project-donate'));
  const map=renderToStaticMarkup(React.createElement('svg',null,React.createElement(api.MapScene,{projects:town.community.projects,buildings:town.buildings,units:town.units,selected:null,highlight:null,tool:null,zoom:1,pan:{x:0,y:0},onPlot(){},onBuilding(){},size:town.size,decorations:town.decorations})));assert.match(map,/PROGETTO|REALIZZATO/);
+ // Civic projects: residents fund a public building on a reserved plot.
+ await d.prepare('UPDATE neighborhood_projects SET completed_at=? WHERE completed_at IS NULL').bind(Date.now()).run();
+ town=await ok();const taken=new Set(town.buildings.flatMap(b=>api.buildingCells(b).map(c=>c.x+','+c.y)));let plot;for(let y=2;!plot&&y<town.size-1;y++)for(let x=2;x<town.size-1;x++)if(api.buildable(x,y,town.size)&&!taken.has(x+','+y)){plot={x,y};break;}
+ assert.equal((await call({action:'project-create',kind:'cafe',...plot},'alice')).status,403);assert.equal((await call({action:'project-create',kind:'cottage',...plot})).status,400,'homes are not civic');
+ town=await ok({action:'project-create',kind:'cafe',...plot});const civic=town.community.projects.find(p=>p.kind==='civic');assert.equal(civic.goal,180);assert.equal(civic.x,plot.x);
+ assert.equal((await call({action:'project-create',kind:'market',...plot})).status,400,'plot already reserved');assert.equal((await call({action:'build',kind:'tree',...plot})).status,400,'mayor cannot build on a reserved plot');
+ await d.prepare("UPDATE residents SET wallet=1000 WHERE username IN ('alice','bob')").run();const cafes=town.buildings.filter(b=>b.kind==='cafe').length;
+ const final=await Promise.all([0,1,2,3,4].map(i=>call({action:'project-contribute',username:i%2?'bob':'alice',projectId:civic.id,amount:50,requestId:crypto.randomUUID()},i%2?'bob':'alice')));assert.ok(final.filter(r=>r.status===200).length>=1);
+ for(let i=0;i<4&&!(await ok()).community.projects.find(p=>p.id===civic.id).completedAt;i++)await ok({action:'project-contribute',username:'alice',projectId:civic.id,amount:50,requestId:crypto.randomUUID()},'alice');
+ town=await ok();assert.ok(town.community.projects.find(p=>p.id===civic.id).completedAt);assert.equal(town.buildings.filter(b=>b.kind==='cafe').length,cafes+1,'building appears exactly once');assert.ok(town.buildings.some(b=>b.id==='project-'+civic.id&&b.x===plot.x&&b.y===plot.y));
+ assert.equal(town.residents.filter(r=>['alice','bob'].includes(r.username)).reduce((n,r)=>n+r.wallet,0),2000-180,'only the goal is debited');
+ assert.ok(renderToStaticMarkup(React.createElement(api.CommunityPanel,{town,section:'projects',admin:true,active:'alice',busy:false,onClose(){},onSelect(){},onLocate(){},onClaim(){},onAction(){}})).includes('Edificio pubblico'));
+ // Seniority: +1 coin per hour at 40, 120 and 240 worked hours.
+ assert.deepEqual([0,39,40,120,240,999].map(h=>api.seniority(h*450000).bonus),[0,0,1,2,3,3]);assert.equal(api.payroll({job:'barista',paidAt:Date.now()-7*24*450000,payCredit:0,jobMs:120*450000},Date.now()).amount,40*5);
+ console.log('PASS: civic projects reserve plots, block mayor builds, cap competing donations and build once; seniority bonus levels.');
  console.log('PASS: Rome midnight and DST resets; three rotating daily missions; linked-account isolation; one active assignment; real avatar destination; timed and single reward claims; expired tasks and next-day availability.');
  console.log('PASS: admin projects; active limit; shared artwork; atomic capped contributions; idempotent request replays; competing final donations; balances and contributor totals; protected targets; persistence and role-specific panels.');
 }finally{await mf.dispose();}
