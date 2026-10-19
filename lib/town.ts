@@ -34,25 +34,25 @@ export const CATALOG = [
 ] as const;
 export type Kind=typeof CATALOG[number]['id'];
 // World scale shared by artwork, moving actors and label clearance.
-const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:1.12,zoo:1.05,amusement:1.05,sports:1,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
+const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:1.12,zoo:1.5,amusement:1.5,sports:1,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
 export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
-export type Building={id:string;x:number;y:number;kind:Kind;username:string|null;color:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null};
+export type Building={id:string;x:number;y:number;kind:Kind;username:string|null;color:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null;plotSpan?:number|null};
 export type Resident={appearance?:CharacterAppearance;gathering?:Gathering;friendVisit?:{buildingId:string;username:string};mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
 export type Decoration={id:string;gardenId:string;username:string;item:string};
 export type Purchase={username:string;item:string};
 export type BoardMessage={id:string;buildingId:string;title:string;body:string;authorLabel:string;official:boolean;pinned:boolean;createdAt:number;own:boolean};
-export type Town={polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
+export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports'];
 export const TRANSPORT_KINDS=['road','bridge'];
-export function footprint(kind:string){return LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}
-type PlacedBuilding=Pick<Building,'x'|'y'|'kind'|'bridgeAxis'|'bridgeSpan'>;
-export function buildingFootprint(b:Pick<Building,'kind'|'bridgeAxis'|'bridgeSpan'>){const span=Math.max(1,b.bridgeSpan||1);return b.kind==='bridge'?{width:b.bridgeAxis==='y'?1:span,height:b.bridgeAxis==='y'?span:1}:footprint(b.kind);}
+export function footprint(kind:string){return kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}
+type PlacedBuilding=Pick<Building,'x'|'y'|'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>;
+export function buildingFootprint(b:Pick<Building,'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>){const span=Math.max(1,b.bridgeSpan||1);return b.kind==='bridge'?{width:b.bridgeAxis==='y'?1:span,height:b.bridgeAxis==='y'?span:1}:b.plotSpan?{width:b.plotSpan,height:b.plotSpan}:footprint(b.kind);}
 export function buildingCells(b:PlacedBuilding){const f=buildingFootprint(b);return Array.from({length:f.width},(_,dx)=>Array.from({length:f.height},(_,dy)=>({x:b.x+dx,y:b.y+dy}))).flat();}
 export function buildingCenter(b:PlacedBuilding){const f=buildingFootprint(b);return {x:b.x+(f.width-1)/2,y:b.y+(f.height-1)/2};}
-export function canPlace(kind:string,x:number,y:number,size:number,occupied:Set<string>){return buildingCells({kind:kind as Kind,x,y}).every(c=>buildable(c.x,c.y,size)&&!occupied.has(`${c.x},${c.y}`));}
+export function canPlace(kind:string,x:number,y:number,size:number,occupied:Set<string>,roadCuts:{x:number;y:number}[]=[]){return buildingCells({kind:kind as Kind,x,y}).every(c=>buildable(c.x,c.y,size,roadCuts)&&!occupied.has(`${c.x},${c.y}`));}
 export const APARTMENTS_PER_BUILDING=6;
 export type HousingUnit={id:string;buildingId:string;unit:number;username:string|null;color:string};
 export type Dwelling=Building&{buildingId:string;unit:number};
@@ -66,7 +66,7 @@ export const ROAD_X=[4,12,20,28,36],ROAD_Y=[6,14,21,29,37];
 export const isRoad=(x:number,y:number)=>ROAD_X.includes(x)||ROAD_Y.includes(y);
 export const INITIAL=[{x:2,y:2,kind:'cottage'},{x:3,y:4,kind:'villa'},{x:6,y:2,kind:'cottage'},{x:8,y:3,kind:'loft'},{x:7,y:8,kind:'villa'},{x:3,y:8,kind:'cottage'},{x:7,y:5,kind:'cafe'},{x:5,y:4,kind:'fountain'},{x:2,y:9,kind:'garden'},{x:9,y:8,kind:'garden'},{x:1,y:3,kind:'tree'},{x:2,y:5,kind:'tree'},{x:9,y:2,kind:'tree'},{x:10,y:4,kind:'tree'},{x:6,y:9,kind:'tree'},{x:9,y:10,kind:'tree'}] as {x:number;y:number;kind:Kind}[];
 export const EXPANSION=[{x:14,y:1,kind:'station'},{x:22,y:1,kind:'station'},{x:14,y:5,kind:'school'},{x:19,y:9,kind:'clinic'},{x:16,y:13,kind:'market'},{x:13,y:18,kind:'library'},{x:17,y:18,kind:'cafe'},{x:8,y:17,kind:'garden'},{x:17,y:9,kind:'garden'},{x:18,y:17,kind:'fountain'},{x:15,y:17,kind:'cottage'},{x:16,y:19,kind:'villa'},{x:6,y:18,kind:'loft'},{x:9,y:16,kind:'cottage'},{x:21,y:16,kind:'cottage'},{x:21,y:18,kind:'villa'},{x:10,y:17,kind:'tree'},{x:15,y:9,kind:'tree'},{x:17,y:4,kind:'tree'},{x:19,y:17,kind:'tree'},{x:7,y:19,kind:'tree'},{x:15,y:20,kind:'tree'}] as {x:number;y:number;kind:Kind}[];
-export function buildable(x:number,y:number,size=BASE_SIZE){return Number.isInteger(x)&&Number.isInteger(y)&&x>=1&&y>=1&&x<size-1&&y<size-1&&!isRoad(x,y);}
+export function buildable(x:number,y:number,size=BASE_SIZE,roadCuts:{x:number;y:number}[]=[]){return Number.isInteger(x)&&Number.isInteger(y)&&x>=1&&y>=1&&x<size-1&&y<size-1&&(!isRoad(x,y)||roadCuts.some(c=>c.x===x&&c.y===y));}
 export function cost(kind:string){return CATALOG.find(c=>c.id===kind)?.cost||0;}
 // Compressed calendar: 1 virtual hour = 7.5 real minutes, 1 day = 3 real hours.
 export const GAME_HOUR_MS=450000,GAME_DAY_MS=24*GAME_HOUR_MS,GAME_WEEK_MS=7*GAME_DAY_MS;

@@ -19,7 +19,7 @@ try{
  const game=async(data,cookie='',spoof={})=>{const req=new Request('https://game.test/api/town',{method:data?'POST':'GET',headers:{origin:'https://game.test',...spoof,...(data?{'Content-Type':'application/json'}:{}),...(cookie?{cookie}:{})},...(data?{body:JSON.stringify(data)}:{})});const res=await (data?api.POST(req):api.GET(req));return {status:res.status,data:await res.json()};};
  const ok=async(data,cookie)=>{const res=await game(data,cookie);assert.equal(res.status,200,JSON.stringify(res));return res.data;};
  const ownerId=await api.ensureAuth();assert.ok(ownerId);assert.equal((await client.execute('SELECT COUNT(*) AS n FROM auth_user')).rows[0].n,1);assert.equal((await client.execute('SELECT COUNT(*) AS n FROM auth_session')).rows[0].n,0,'owner bootstrap cannot sign visitors in as the owner');
- await api.ensureSchema();const count=(await client.execute('SELECT COUNT(*) AS n FROM followville_migrations')).rows[0].n;assert.equal(count,18,'all game and auth migrations applied once');
+ await api.ensureSchema();const count=(await client.execute('SELECT COUNT(*) AS n FROM followville_migrations')).rows[0].n;assert.equal(count,19,'all game and auth migrations applied once');
  const spoof={'oai-authenticated-user-id':ownerId,'oai-authenticated-user-email':'owner@example.test'};assert.equal((await game(undefined,'',spoof)).status,401);assert.equal((await game({action:'rename',name:'Intrusion'},'',spoof)).status,401);
  const login=await authCall('sign-in/email',{email:'owner@example.test',password:process.env.FOLLOWVILLE_ADMIN_PASSWORD});assert.equal(login.status,200,JSON.stringify(login.data));assert.ok(login.cookies);const ownerCookie=login.cookies;
  let town=await ok(undefined,ownerCookie);assert.equal(town.session.canAdmin,true);

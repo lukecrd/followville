@@ -94,3 +94,5 @@ body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI"
 
 /* The map has one neutral terrain surface; only gardens use green ground. */
 .terrain-legend i.ground{background:#e6ead3;border-color:#b9c0a2}.terrain-legend i.park{background:#b9d2a5;border-color:#95ac80}
+
+.moving-source{opacity:.35}.building-mode .street-hit{cursor:move}.building-mode .street-hit:hover{fill:#8cd3ca66}.tool-hint button:disabled{opacity:.45}
