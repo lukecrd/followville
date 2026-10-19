@@ -54,3 +54,12 @@ next-env.d.ts
 /.codex/
 /outputs/
 /work/
+
+# Autonomous Vercel build output and secrets
+/deploy/vercel/node_modules/
+/deploy/vercel/.generated/
+/deploy/vercel/.next/
+/deploy/vercel/public/
+/deploy/vercel/next-env.d.ts
+/deploy/vercel/*.tsbuildinfo
+!/deploy/vercel/.env.example

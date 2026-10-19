@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import {authClient} from '../../server/auth-client';
+export function AccountForm(){const [currentPassword,setCurrent]=useState(''),[newPassword,setNew]=useState(''),[busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ async function change(e:React.FormEvent){e.preventDefault();setBusy(true);setMessage('');try{const result=await authClient.changePassword({currentPassword,newPassword,revokeOtherSessions:true});if(result.error)setMessage('Password attuale non corretta o modifica non riuscita.');else{setMessage('Password aggiornata. Gli altri accessi sono stati chiusi.');setCurrent('');setNew('');}}catch{setMessage('Connessione non disponibile. Riprova.');}finally{setBusy(false);}}
+ async function logout(){setBusy(true);try{const result=await authClient.signOut();if(result.error){setMessage('Uscita non riuscita. Riprova.');setBusy(false);return;}window.location.assign('/sign-in');}catch{setBusy(false);setMessage('Connessione non disponibile. Riprova.');}}
+ return <><form onSubmit={change}><h2>Cambia password</h2><label>Password attuale<input type="password" autoComplete="current-password" value={currentPassword} onChange={e=>setCurrent(e.target.value)} required maxLength={128}/></label><label>Nuova password<input type="password" autoComplete="new-password" value={newPassword} onChange={e=>setNew(e.target.value)} required minLength={12} maxLength={128}/></label><button className="account-primary" disabled={busy}>Aggiorna password</button></form>{message&&<p role="status" className="account-note">{message}</p>}<button className="account-secondary" disabled={busy} onClick={logout}>Esci dal tuo account</button></>;
+}

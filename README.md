@@ -1,3 +1,11 @@
+# FollowVille
+
+Gioco di città per la tua community: abitanti, case, lavoro, negozi, amicizie, feste e votazioni.
+
+**Vercel:** la versione autonoma si trova in [`deploy/vercel`](deploy/vercel/README.md). La guida include database persistente, variabili ambiente e account amministratore.
+
+La versione ChatGPT Sites continua a utilizzare la configurazione della radice.
+
 # vinext-starter
 
 A clean full-stack starter running on [vinext](https://github.com/cloudflare/vinext), with optional Cloudflare D1 and Drizzle support.
