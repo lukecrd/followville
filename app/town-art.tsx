@@ -5,6 +5,7 @@ import {SocialBuildingDecor} from './social-art';
 import type {NeighborhoodProject} from '../lib/community';
 import {ModernHomeArt,ModernOfficeArt,ModernCafeArt} from './modern-buildings';
 import {BridgeArt} from './bridge-art';
+import {StationArt} from './station-art';
 import {bridgePlanner,canConnectRoad} from '../lib/bridges';
 import React,{memo,useEffect,useMemo,useRef,useCallback,useLayoutEffect,useId} from 'react';
 import {Building,Kind,Resident,Decoration,HousingUnit,BASE_SIZE,buildable,CATALOG,buildingCells,buildingCenter,footprint,canPlace,TRANSPORT_KINDS,buildingScale,PEDESTRIAN_SCALE,CAR_SCALE} from '../lib/town';
@@ -21,12 +22,13 @@ export function Tree({x=0,y=0,small=false}:{x?:number;y?:number;small?:boolean})
 export function BuildingArt({kind,color='#d88162',mini=false,bridgeAxis='x',bridgeSpan=1,units=[],flowerUnits=[]}:{kind:Kind;color?:string;mini?:boolean;bridgeAxis?:'x'|'y'|'cross';bridgeSpan?:number;units?:HousingUnit[];flowerUnits?:number[]}){
  if(kind==='cottage'||kind==='villa'||kind==='loft')return <ModernHomeArt kind={kind} color={color} mini={mini}/>;
  if(kind==='bridge')return <BridgeArt color={color} axis={bridgeAxis} span={bridgeSpan}/>;
+ if(kind==='station')return <StationArt color={color}/>;
  if(['townhall','mall','stadium','zoo','amusement','hospital','sports','cinema','museum','firestation','police','bridge'].includes(kind))return <LandmarkArt kind={kind} color={color}/>;
  if(kind==='bank')return <BankArt color={color}/>;
  if(kind==='office')return <OfficeArt color={color}/>;
  if(kind==='road')return <g transform="translate(0 -25)"><RoadArt/></g>;
  if(kind==='apartment')return <ApartmentArt color={color} units={units} flowerUnits={flowerUnits}/>;
- if(['station','school','clinic','library','market'].includes(kind))return <ServiceArt kind={kind} color={color}/>;
+ if(['school','clinic','library','market'].includes(kind))return <ServiceArt kind={kind} color={color}/>;
  if(kind==='tree')return <Tree/>;
  if(kind==='garden')return <g><path d="M-32 0 0 16 33 0 0-16z" fill="#8cab70"/><path d="m-21 0 21 10 22-10-22-10z" fill="#b9cb8b"/><Tree x={-13} y={0} small/><g transform="translate(16 2)"><path d="m-10-8 16 8v6l-16-8z" fill="#b88858"/><path d="m-8 0 13 6v3l-13-6z" fill="#99724c"/></g>{[[-1,5],[16,-7],[4,-10]].map(([x,y],i)=><g key={i} transform={`translate(${x} ${y})`}><circle r="3" fill="#ebbc9b"/><circle cx="2" cy="-2" r="2" fill="#fff2c0"/></g>)}</g>;
  if(kind==='fountain')return <g><ellipse cy="4" rx="31" ry="16" fill="#4c685e" opacity=".13"/><path d="M-29-2v9Q0 30 29 7V-2" fill="#a4aaa0"/><ellipse cy="-2" rx="29" ry="15" fill="#deddd0"/><ellipse cy="-2" rx="24" ry="11" fill="#85b9c0"/><path d="M-5-3v-19h10v19" fill="#d9d7c6"/><ellipse cy="-22" rx="15" ry="7" fill="#eeedde"/><path d="M-14-22q0 13 14 13t14-13" fill="#b9c3b2"/><ellipse cy="-23" rx="12" ry="5" fill="#9acbd0"/><path d="M0-23v-16m0 5Q-12-44-12-27m12-7Q12-44 12-27" fill="none" stroke="#addce0" strokeWidth="2.5" strokeLinecap="round"/><circle cy="-40" r="2" fill="#d7f0ec"/></g>;
@@ -78,11 +80,10 @@ export function TrainArt(){return <g>{[0,-42,-84].map((x,i)=><g key={x} transfor
 export function HouseDecor({bits}:{bits:number}){return <g>{(bits&1)>0&&<g><path d="m-18-18 12 6v4l-12-6z" fill="#b58263"/>{[-16,-12,-8].map((x,i)=><g key={x}><circle cx={x} cy={-20+i*2} r="2.7" fill={i%2?'#efd293':'#df9da1'}/><path d={`m${x} ${-17+i*2}v4`} stroke="#739357"/></g>)}</g>}{(bits&2)>0&&<g transform="translate(30 4)"><path d="m-10-15 17 8 13-6-17-8z" fill="#b89d6e"/><path d="M-10-15V0m17-7v15m13-21v15" stroke="#9c835a" strokeWidth="2"/><path d="m-4-18 17 8M1-20l17 8" stroke="#d9c18c" strokeWidth="2"/><path d="m-10-15 16 8 13-6" stroke="#71915e" strokeWidth="4" fill="none"/></g>}{(bits&4)>0&&<g transform="translate(-28 13)"><ellipse rx="21" ry="10" fill="#e4e2cc"/><ellipse rx="17" ry="7" fill="#80bcc5"/><path d="M-10 0h10m5 2h6" stroke="#c9e7e1" strokeWidth="1.5"/></g>}</g>}
 export function GardenDecor({items}:{items:string[]}){return <g>{items.includes('flowers')&&[-18,0,18].map((x,i)=><g key={x} transform={`translate(${x} ${9-i*2})`}><ellipse rx="8" ry="4" fill="#859b5f"/><circle cx="-3" cy="-3" r="3" fill="#e4a0a0"/><circle cx="3" cy="-1" r="3" fill="#f4d488"/></g>)}{items.includes('bench')&&<g transform="translate(-23 0)"><path d="m-10-10 18 9v5l-18-9z" fill="#b8865f"/><path d="m-10-2 18 9 5-3-18-9z" fill="#d1a679"/><path d="M-10-2v6m18 3v6" stroke="#75816a" strokeWidth="2"/></g>}{items.includes('lights')&&<g><path d="M-25 0v-38M26 4v-38" stroke="#8b977d" strokeWidth="2"/><path d="M-25-38Q0-16 26-34" stroke="#a3a98b" strokeWidth="1.1" fill="none"/>{[-18,-8,3,15,24].map((x,i)=><circle key={x} cx={x} cy={-33+[0,5,6,4,-1][i]} r="2.7" fill="#ffe2a0" stroke="#f4d18e"/>)}</g>}{items.includes('gazebo')&&<g transform="translate(5 -8)"><path d="M-17-18v18M17-18V0M0-10v20" stroke="#e9ddbd" strokeWidth="3"/><path d="m-22-19 22-28 22 28-22 12z" fill="#769785"/><path d="m0-47 22 28L0-7z" fill="#5b7c6c"/><circle cy="-47" r="2" fill="#d5bd7c"/></g>}</g>}
 function ServiceArt({kind,color}:{kind:Kind;color:string}){
- const station=kind==='station',market=kind==='market',clinic=kind==='clinic',school=kind==='school';
+ const market=kind==='market',clinic=kind==='clinic',school=kind==='school';
  return <g><ellipse cy="7" rx="40" ry="16" fill="#41654d" opacity=".14"/><path d="m-37-3 36 18 38-19L1-22z" fill="#d0d0b8"/><path d="m-32-9 32 16v-44l-32-16z" fill="#f0e5cd"/><path d="m0 7 32-16v-44L0-37z" fill="#cecbb7"/>
  <path d="m-37-52 37 18 37-18-37-19z" fill={color}/><path d="m0-34 37-18v-5L0-39z" fill={color} style={{filter:'brightness(.75)'}}/>
  {[-24,-13].map(x=><path key={x} d={`m${x}-37 7 3v14l-7-3z`} fill="#8dafad"/>)}<path d="m9-34 14-7v23l-14 7z" fill="#7e9b98"/>
- {station&&<><path d="m-35-19 39 19 32-16-36-18z" fill="#93a59a"/><path d="M-35-19v18M4 0v13M36-16v15" stroke="#6f887d" strokeWidth="2"/><g transform="translate(-13 -49)"><circle r="10" fill="#f4eed9" stroke="#acb59e" strokeWidth="2"/><path d="M0-6v6l4 3" stroke="#6b7d67" strokeWidth="1.5" fill="none"/></g><path d="M2-69v-11h17v10z" fill="#4b6d63"/><text x="10" y="-72" fontSize="7" textAnchor="middle" fill="#f7f3de">FS</text></>}
  {market&&<><path d="m-35-26 36 18 34-17 4 13L1 6-38-13z" fill="#f4e3bb"/>{[-28,-13,2,17].map((x,i)=><path key={x} d={`m${x} ${-23+i*2} 9 4-2 13-9-4z`} fill="#b88161"/>)}<path d="m-19-9 14 7 9-5-14-7z" fill="#b38961"/><circle cx="-12" cy="-10" r="3" fill="#adc36e"/><circle cx="-5" cy="-8" r="3" fill="#e2b06c"/></>}
  {clinic&&<g transform="translate(-16 -50)"><circle r="12" fill="#f6f3e5"/><path d="M-3-8h6v5h5v6H3v5h-6V3h-5v-6h5z" fill="#c48173"/></g>}
  {school&&<><path d="M0-71v-22" stroke="#8e9c82" strokeWidth="2"/><path d="M1-92 18-84 1-79z" fill="#cf9970"/><g transform="translate(-16 -50)"><circle r="9" fill="#f7edd4"/><path d="M0-6v6l5 2" stroke="#9c9f87" strokeWidth="1.5" fill="none"/></g></>}
