@@ -1,3 +1,6 @@
+import type {CivicPoll} from './voting';
+import type {CharacterAppearance} from './appearance';
+import type {SocialState,Gathering} from './social';
 import type {CommunityState,DailyMission} from './community';
 export const CATALOG = [
  {id:'cottage',name:'Casetta',cost:120,category:'Case',desc:'Il primo posto da chiamare casa',color:'#d88162'},
@@ -36,11 +39,11 @@ export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
 export type Building={id:string;x:number;y:number;kind:Kind;username:string|null;color:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null};
-export type Resident={mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
+export type Resident={appearance?:CharacterAppearance;gathering?:Gathering;friendVisit?:{buildingId:string;username:string};mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
 export type Decoration={id:string;gardenId:string;username:string;item:string};
 export type Purchase={username:string;item:string};
 export type BoardMessage={id:string;buildingId:string;title:string;body:string;authorLabel:string;official:boolean;pinned:boolean;createdAt:number;own:boolean};
-export type Town={community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
+export type Town={polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports'];
 export const TRANSPORT_KINDS=['road','bridge'];

@@ -1,7 +1,7 @@
 /* FollowVille — contemporary miniature city, ink and turquoise controls. */
 :root{--ink:#243c51;--muted:#6c8293;--green:#197f86;--line:#dce5ec;--paper:#fff;--cream:#f0f5f8;--accent:#137e88;--nav:#20384b;--soft:#edf5f7}
 body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-feature-settings:"cv11","ss01"}
-.fullscreen-city .game{background:#edf2f6}
+.fullscreen-city .game{background:#e6ead3}
 .fullscreen-city .city-hud,.fullscreen-city .wallet-hud,.fullscreen-city .life-panel,.fullscreen-city .build-tray,.fullscreen-city .role-popover,.fullscreen-city .map-controls.map-zoom{background:#fffffff5;border:1px solid #ffffff;box-shadow:0 8px 32px #20384b12,0 1px 4px #20384b08;backdrop-filter:blur(12px)}
 .fullscreen-city .city-hud{padding:16px 19px;border-radius:20px}
 .fullscreen-city .hud-leaf{background:var(--nav);color:#75ddd4;border-radius:13px;width:40px;height:43px;box-shadow:inset 0 1px #ffffff20}

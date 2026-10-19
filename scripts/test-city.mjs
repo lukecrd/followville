@@ -68,6 +68,15 @@ for(const rect of [{left:0,top:0,width:1440,height:900},{left:30,top:40,width:39
 assert.equal(api.zoomCamera({zoom:1,pan:{x:0,y:0}},100).zoom,api.MAX_ZOOM);assert.equal(api.zoomCamera({zoom:1,pan:{x:0,y:0}},.01).zoom,api.MIN_ZOOM);
 const metric=api.pinchMetric([{x:10,y:20},{x:110,y:20}]);assert.equal(metric.distance,100);assert.deepEqual(metric.center,{x:60,y:20});const pinchCamera=api.zoomCamera({zoom:1,pan:{x:0,y:0}},2,{x:600,y:400},{x:650,y:420});assert.deepEqual(pinchCamera.pan,{x:250,y:70});
 const zoomMarkup=renderToStaticMarkup(React.createElement(api.MapZoom,{zoom:1,onZoom:()=>{},onReset:()=>{}}));assert.ok(zoomMarkup.includes('type="range"')&&zoomMarkup.includes('Mostra tutta la città')&&zoomMarkup.includes('Aumenta zoom'));
+for(const [width,height] of [[320,568],[390,844],[844,390],[768,1024],[1440,900],[1600,1080],[2560,1080],[5120,1440]])for(const size of [24,48,96]){
+ const rect={left:27,top:41,width,height},camera=api.cityCamera(rect,size);
+ for(const [dx,dy] of [[0,0],[width,0],[width,height],[0,height]]){
+  const screen=api.screenPoint({x:rect.left+dx,y:rect.top+dy},rect),world={x:800+(screen.x-800-camera.pan.x)/camera.zoom,y:450+(screen.y-450-camera.pan.y)/camera.zoom};
+  const u=(world.x-800)*size/720,v=(world.y-110)*size/360,x=(u+v)/2,y=(v-u)/2;
+  assert.ok(x>-.5&&y>-.5&&x<size-.5&&y<size-.5,`opening viewport corner stays inside the city at ${width}×${height}, size ${size}`);
+ }
+}
+console.log('PASS: immersive opening fills phones, tablets, desktop and ultrawide screens without city boundaries, including expanded maps.');
 console.log('PASS: complete multi-lot bridges, both-bank routes, one deck and two ramps; anchored zoom, pinch geometry, zoom limits, responsive city fit and accessible zoom controls.');
 
 // Work is paid only during weekday shifts; partial coins survive each collection.

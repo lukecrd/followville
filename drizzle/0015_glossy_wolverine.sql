@@ -1,0 +1,1 @@
+ALTER TABLE `residents` ADD `appearance` text DEFAULT '{}' NOT NULL;

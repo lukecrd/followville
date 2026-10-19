@@ -7,3 +7,10 @@ export function zoomCamera(camera:Camera,zoom:number,anchor:MapPoint={x:800,y:45
 export function pinchMetric(points:MapPoint[]){return {center:{x:(points[0].x+points[1].x)/2,y:(points[0].y+points[1].y)/2},distance:Math.max(1,Math.hypot(points[0].x-points[1].x,points[0].y-points[1].y))};}
 
 export function fitCamera(rect:{left:number;top:number;width:number;height:number}):Camera{const scale=Math.max(rect.width/1600,rect.height/1080),zoom=clampZoom(Math.min(.98,(rect.width-32)/scale/1500,Math.max(120,rect.height-230)/scale/950)),center=screenPoint({x:rect.left+rect.width/2,y:rect.top+(110+rect.height-120)/2},rect);return {zoom,pan:{x:center.x-800,y:center.y-450-25*zoom}};}
+
+// Cover the viewport with the city's diamond, with some ground beyond every corner.
+export function cityCamera(rect:{left:number;top:number;width:number;height:number},size=24):Camera{
+ const scale=Math.max(rect.width/1600,rect.height/1080),width=rect.width/scale,height=rect.height/scale;
+ const zoom=clampZoom((width/1440+height/720)*1.08),center=screenPoint({x:rect.left+rect.width/2,y:rect.top+rect.height/2},rect);
+ return {zoom,pan:{x:center.x-800,y:center.y-450-(20-360/size)*zoom}};
+}
