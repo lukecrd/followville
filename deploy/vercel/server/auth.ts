@@ -4,6 +4,7 @@ import {nextCookies} from 'better-auth/next-js';
 import {drizzle} from 'drizzle-orm/libsql';
 import {databaseClient,ensureDatabase} from './database';
 import * as schema from './auth-schema';
+import {recoverOwnerPassword} from './owner-recovery';
 
 let instance:ReturnType<typeof makeAuth>|undefined;
 function makeAuth(){return betterAuth({
@@ -26,7 +27,9 @@ async function bootstrapOwner(){
   existing=await db.execute({sql:'SELECT id FROM auth_user WHERE email=?',args:[email]});
  }
  if(!existing.rows.length)throw new Error('Unable to initialize owner.');
- return String(existing.rows[0].id);
+ const ownerId=String(existing.rows[0].id);
+ await recoverOwnerPassword(db,ownerId,process.env.FOLLOWVILLE_ADMIN_PASSWORD!);
+ return ownerId;
 }
 export function ensureAuth(){return initialized??=bootstrapOwner().catch(error=>{initialized=undefined;throw error;});}
 export async function userSession(headers:Headers){await ensureAuth();return auth().api.getSession({headers});}

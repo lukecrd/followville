@@ -9,7 +9,7 @@ const fixture=path.join(root,'.sites-runtime/vercel-test-'+randomBytes(8).toStri
 await mkdir(path.dirname(fixture),{recursive:true});
 Object.assign(process.env,{NODE_ENV:'test',TURSO_DATABASE_URL:'file:'+fixture,TURSO_AUTH_TOKEN:'test-local-only',BETTER_AUTH_SECRET:randomBytes(32).toString('hex'),BETTER_AUTH_URL:'https://game.test',FOLLOWVILLE_ADMIN_EMAIL:'owner@example.test',FOLLOWVILLE_ADMIN_PASSWORD:'owner-test-password-long-enough'});
 const output=path.join(app,'.generated/vercel-check.mjs');
-await w('esbuild').build({stdin:{contents:"export * from './server/database';export * from './server/auth';export {GET,POST} from './app/api/town/route';",resolveDir:app},bundle:true,packages:'external',platform:'node',format:'esm',outfile:output,jsx:'automatic'});
+await w('esbuild').build({stdin:{contents:"export * from './server/database';export * from './server/auth';export * from './server/owner-recovery';export {GET,POST} from './app/api/town/route';",resolveDir:app},bundle:true,packages:'external',platform:'node',format:'esm',outfile:output,jsx:'automatic'});
 const api=await import(pathToFileURL(output).href),client=api.databaseClient();
 try{
  const authCall=async(endpoint,data,cookie='')=>{
@@ -37,5 +37,23 @@ try{
  const untrusted=await api.gameRequest(new Request('https://game.test/api/town',{headers:{cookie:aliceCookie,...spoof}}));assert.equal(untrusted.headers.get('oai-authenticated-user-id'),aliceLogin.data.user.id);assert.equal(untrusted.headers.get('oai-authenticated-user-email'),null);
  const logout=await authCall('sign-out',{},aliceCookie);assert.equal(logout.status,200);assert.equal((await game(undefined,aliceCookie)).status,401,'revoked sessions stop authorizing game requests');
  assert.equal(api.safeReturnTo('//evil.test'),'/');assert.equal(api.safeReturnTo('/\\evil.test'),'/');assert.equal(api.safeReturnTo('/?invite=abc'),'/?invite=abc');
+ // Owner recovery is opt-in, one-time, and never changes another player's account or city.
+ const playerSession=await authCall('sign-in/email',{email:'alice@example.test',password:'alice-test-password-long'});assert.equal(playerSession.status,200);
+ assert.equal(await api.recoverOwnerPassword(client,ownerId,'unused-recovery-password'),false);
+ const recoveredPassword='owner-recovered-test-password-long';
+ assert.equal(await api.recoverOwnerPassword(client,ownerId,recoveredPassword,'1'),true);
+ assert.equal((await game(undefined,ownerCookie)).status,401,'recovery revokes existing owner sessions');
+ assert.equal((await authCall('sign-in/email',{email:'owner@example.test',password:process.env.FOLLOWVILLE_ADMIN_PASSWORD})).status,401,'previous owner password no longer works');
+ const recovered=await authCall('sign-in/email',{email:'owner@example.test',password:recoveredPassword});assert.equal(recovered.status,200);assert.equal((await game(undefined,recovered.cookies)).data.session.canAdmin,true);
+ assert.equal((await game(undefined,playerSession.cookies)).status,200,'other player sessions survive owner recovery');
+ assert.equal(await api.recoverOwnerPassword(client,ownerId,'must-not-replace-password','1'),false,'cold starts do not repeat a recovery');
+ assert.equal(await api.recoverOwnerPassword(client,ownerId,'second-recovery-password-long','2'),true);
+ assert.equal(await api.recoverOwnerPassword(client,ownerId,recoveredPassword,'1'),false,'older deployments cannot roll the password back');
+ assert.equal((await authCall('sign-in/email',{email:'owner@example.test',password:'second-recovery-password-long'})).status,200);
+ await assert.rejects(()=>api.recoverOwnerPassword(client,'missing-owner','rollback-test-password-long','1'));
+ assert.equal((await client.execute("SELECT COUNT(*) AS n FROM followville_owner_recovery WHERE user_id='missing-owner'")).rows[0].n,0,'failed recovery rolls back its version marker');
+ assert.equal((await client.execute("SELECT wallet FROM residents WHERE username='alice'")).rows[0].wallet,650,'recovery preserves city progress');
+ await assert.rejects(()=>api.recoverOwnerPassword(client,ownerId,'unused-recovery-password','0'));
+ console.log('PASS: owner recovery changes only the owner password, revokes owner sessions, preserves players and city, runs once per version, rejects stale versions and rolls back failures.');
  console.log('PASS: autonomous SQLite migrations and owner bootstrap without session leakage; persistent email/password accounts and signed sessions; spoofed identity rejection; admin/player roles; invitations and resident isolation; concurrent purchases charged once; transactional changes() and full rollback; persistent game reload; logout and safe redirects.');
 }finally{client.close();await rm(fixture,{force:true});await rm(fixture+'-wal',{force:true});await rm(fixture+'-shm',{force:true});}

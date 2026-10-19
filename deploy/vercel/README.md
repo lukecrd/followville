@@ -36,6 +36,16 @@ Le migrazioni vengono registrate con un hash e applicate una sola volta in trans
 
 `FOLLOWVILLE_ADMIN_PASSWORD` crea l’account solo la prima volta: cambiarla nelle variabili **non** modifica una password già salvata. Per cambiarla usa **Account → Cambia password**. Non è configurato un servizio email per recupero password o verifica dell’email; i diritti sugli abitanti dipendono dagli inviti monouso dell’amministratore.
 
+## Recuperare l’accesso amministratore
+
+Se non ricordi la password iniziale, il proprietario del progetto Vercel può recuperare l’account senza cancellare cittadini o progressi:
+
+1. In **Settings → Environment Variables**, imposta `FOLLOWVILLE_ADMIN_PASSWORD` sulla nuova password personale, tra 16 e 128 caratteri. Non cambiare `FOLLOWVILLE_ADMIN_EMAIL`: deve identificare lo stesso amministratore.
+2. Aggiungi `FOLLOWVILLE_ADMIN_PASSWORD_RESET_VERSION` con valore `1` per **Production**. Per un recupero successivo, aumenta il numero (`2`, `3`, …).
+3. Esegui un nuovo deploy di produzione e apri il sito. Accedi con l’email amministratore e la nuova password.
+
+Il server applica il recupero una sola volta per versione e revoca le sessioni dell’amministratore. Gli altri account, le loro password e la città rimangono invariati. Puoi lasciare la versione impostata: riavvii e deploy precedenti non ripristinano password già superate. Dopo il recupero, **Account → Cambia password** continua a funzionare normalmente. Questa procedura non espone un endpoint di reset pubblico e non richiede di leggere o modificare manualmente gli hash nel database.
+
 ## Sviluppo
 
 Questa sezione è facoltativa e serve solo per avviare il gioco sul tuo computer.
