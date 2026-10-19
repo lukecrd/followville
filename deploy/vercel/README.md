@@ -4,6 +4,8 @@ Questa è la versione autonoma del gioco: Next.js 16, database remoto libSQL/Tur
 
 ## Pubblicazione
 
+Puoi pubblicare direttamente da GitHub: **non serve installare il gioco sul computer né eseguire la sezione Sviluppo**.
+
 1. Crea un database **libSQL** in Turso (non un database locale o una replica salvata nel filesystem di Vercel). Conserva il suo URL e genera un token con permessi di lettura e scrittura. Puoi usare l’integrazione Turso disponibile per Vercel.
 2. In Vercel scegli **Add New → Project** e importa `lukecrd/followville`.
 3. Imposta **Root Directory** su `deploy/vercel` e abilita **Include source files outside of the Root Directory in the Build Step**: la build importa la grafica, la logica e le migrazioni condivise dalla radice del repository.
@@ -20,7 +22,7 @@ Questa è la versione autonoma del gioco: Next.js 16, database remoto libSQL/Tur
 | `FOLLOWVILLE_ADMIN_PASSWORD` | Password iniziale dell’amministratore, almeno 16 caratteri. |
 | `BETTER_AUTH_URL` | Facoltativa: URL definitivo di produzione, senza percorso, per esempio `https://followville.vercel.app`. Lasciala assente per Preview. |
 
-Per generare un segreto sul tuo computer: `openssl rand -base64 32`. Incollalo direttamente nelle variabili protette di Vercel, mai nel repository. Un modello senza valori segreti è disponibile in [.env.example](.env.example).
+Per generare un segreto sul tuo computer, anche in PowerShell con Node.js installato: `node -e "console.log(require('node:crypto').randomBytes(32).toString('base64'))"`. Incollalo direttamente nelle variabili protette di Vercel, mai nel repository. Un modello senza valori segreti è disponibile in [.env.example](.env.example).
 
 Le cinque variabili obbligatorie mancanti vengono elencate nella pagina di configurazione. Dopo averle aggiunte, esegui un nuovo deploy. Se sono presenti ma non valide, controlla URL, token e lunghezza dei segreti.
 
@@ -35,6 +37,8 @@ Le migrazioni vengono registrate con un hash e applicate una sola volta in trans
 `FOLLOWVILLE_ADMIN_PASSWORD` crea l’account solo la prima volta: cambiarla nelle variabili **non** modifica una password già salvata. Per cambiarla usa **Account → Cambia password**. Non è configurato un servizio email per recupero password o verifica dell’email; i diritti sugli abitanti dipendono dagli inviti monouso dell’amministratore.
 
 ## Sviluppo
+
+Questa sezione è facoltativa e serve solo per avviare il gioco sul tuo computer.
 
 Dalla radice del repository:
 
@@ -55,6 +59,10 @@ npm run build --prefix deploy/vercel
 ```
 
 Il comando di build prepara `.generated/` e `public/` copiando i sorgenti condivisi e raccogliendo le migrazioni; queste copie non vanno modificate o aggiunte a Git. Nessun dato di produzione viene letto o migrato durante la build: l’inizializzazione avviene al primo accesso con la configurazione runtime.
+
+Se `npm ci` segnala che manca `package-lock.json`, aggiorna prima la copia del repository con `git pull --ff-only` (se l’hai clonata con Git). Verifica che esistano entrambi i file `deploy/vercel/package.json` e `deploy/vercel/package-lock.json`. Se hai scaricato uno ZIP, scarica la versione corrente ed estraila in una nuova cartella. Il lockfile è incluso nel repository.
+
+La versione Vercel include una propria configurazione PostCSS e le dipendenze Tailwind: non richiede l’installazione delle dipendenze della versione ChatGPT Sites.
 
 Il test `node scripts/test-vercel.mjs`, eseguito dopo `npm run prepare:source --prefix deploy/vercel`, usa un database SQLite temporaneo per verificare login, ruoli, inviti, acquisti concorrenti, transazioni e logout. Le altre verifiche del gioco rimangono nella cartella `scripts/`.
 
