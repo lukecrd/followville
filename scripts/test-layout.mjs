@@ -14,6 +14,10 @@ try{
    await d.prepare("INSERT INTO buildings (id,x,y,kind,color) VALUES ('legacy-zoo',5,15,'zoo','#9aadb0')").run();
    for(let x=5;x<=6;x++)for(let y=15;y<=16;y++)await d.prepare('INSERT INTO building_tiles VALUES (?,?,?,?)').bind('legacy-zoo:'+x+','+y,'legacy-zoo',x,y).run();
   }
+  if(f.startsWith('0018')){
+   await d.prepare("INSERT INTO buildings (id,x,y,kind,color) VALUES ('legacy-stadium',13,7,'stadium','#a1b494')").run();
+   for(let x=13;x<=14;x++)for(let y=7;y<=8;y++)await d.prepare('INSERT INTO building_tiles VALUES (?,?,?,?)').bind('legacy-stadium:'+x+','+y,'legacy-stadium',x,y).run();
+  }
   for(const sql of (await readFile('drizzle/'+f,'utf8')).split('--> statement-breakpoint').filter(s=>s.trim()))await d.prepare(sql).run();
  }
  const call=async(data,headers={})=>{const response=await mf.dispatchFetch('https://game.test/api/town',{method:data?'POST':'GET',headers:{'oai-authenticated-user-id':'owner','oai-authenticated-user-email':'owner@example.test',...headers,...(data?{'Content-Type':'application/json'}:{})},...(data?{body:JSON.stringify(data)}:{})});return {status:response.status,data:await response.json()};};
@@ -37,7 +41,7 @@ try{
  const oldBase={x:4,y:10},at={x:5,y:13};town=await ok({action:'move',id:api.baseRoadId(oldBase.x,oldBase.y),fromX:oldBase.x,fromY:oldBase.y,...at});assert.ok(town.roadCuts.some(c=>c.x===4&&c.y===10));
  const network=api.networkRoads(town.buildings,town.roadCuts);assert.ok(!api.roadCells(town.size,network).has('4,10'));assert.ok(api.roadCells(town.size,network).has('5,13'));assert.ok(!api.streetRoute({x:4,y:9},{x:4,y:11},town.size,network).some(c=>c.x===4&&c.y===10),'residents use the new layout');
  town=await ok({action:'build',kind:'cottage',x:4,y:10});assert.ok(town.buildings.some(b=>b.kind==='cottage'&&b.x===4&&b.y===10),'vacated base road is buildable');
- const legacy=town.buildings.find(b=>b.id==='legacy-zoo');assert.equal(api.buildingCells(legacy).length,4,'migration preserves old zoo occupancy');await move(legacy);assert.equal(api.buildingCells(town.buildings.find(b=>b.id===legacy.id)).length,9,'moving an old zoo upgrades it to nine lots');
+ assert.equal(api.buildingCells(town.buildings.find(b=>b.id==='legacy-stadium')).length,4,'migration preserves old stadium occupancy');const legacy=town.buildings.find(b=>b.id==='legacy-zoo');assert.equal(api.buildingCells(legacy).length,4,'migration preserves old zoo occupancy');await move(legacy);assert.equal(api.buildingCells(town.buildings.find(b=>b.id===legacy.id)).length,9,'moving an old zoo upgrades it to nine lots');
  const amusement=await make('amusement');assert.equal(api.buildingCells(amusement).length,9);assert.equal((await d.prepare('SELECT COUNT(*) AS n FROM building_tiles WHERE building_id=?').bind(amusement.id).first()).n,9);
  const station=town.buildings.find(b=>b.kind==='station');assert.equal((await call({action:'move',id:station.id,fromX:station.x,fromY:station.y,x:2,y:10})).status,400);
  const actual=town.buildings.find(b=>b.id===house.id);const moveRequest={action:'move',id:actual.id,fromX:actual.x,fromY:actual.y,...targetFor(actual)};

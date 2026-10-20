@@ -34,7 +34,7 @@ export const CATALOG = [
 ] as const;
 export type Kind=typeof CATALOG[number]['id'];
 // World scale shared by artwork, moving actors and label clearance.
-const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:1.12,zoo:1.5,amusement:1.5,sports:1,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
+const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
 export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
@@ -47,7 +47,7 @@ export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:Soc
 export const homes=['cottage','villa','loft','apartment'];
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports'];
 export const TRANSPORT_KINDS=['road','bridge'];
-export function footprint(kind:string){return kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}
+export function footprint(kind:string){return kind==='stadium'?{width:5,height:5}:kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}
 type PlacedBuilding=Pick<Building,'x'|'y'|'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>;
 export function buildingFootprint(b:Pick<Building,'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>){const span=Math.max(1,b.bridgeSpan||1);return b.kind==='bridge'?{width:b.bridgeAxis==='y'?1:span,height:b.bridgeAxis==='y'?span:1}:b.plotSpan?{width:b.plotSpan,height:b.plotSpan}:footprint(b.kind);}
 export function buildingCells(b:PlacedBuilding){const f=buildingFootprint(b);return Array.from({length:f.width},(_,dx)=>Array.from({length:f.height},(_,dy)=>({x:b.x+dx,y:b.y+dy}))).flat();}
