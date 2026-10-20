@@ -108,6 +108,8 @@ Use SIWC for account pages, user-specific dashboards, saved records, and write a
 
 ## Local D1 migrations
 
+**FollowVille:** after `npm run build` once, run `npm run db:local`. It applies every pending `drizzle/*.sql` file to the local preview database exactly once; the app seeds the starting town on first load.
+
 For a D1-backed local preview, generate SQL with `npm run db:generate`. Build once through the Sites skill's build entrypoint (or `npm run build` for standalone use) to generate `dist/server/wrangler.json`, rebuilding if bindings change. From the project root, apply each pending migration in order:
 
 ```sh
