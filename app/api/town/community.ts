@@ -1,10 +1,10 @@
 import {GARDEN_ITEMS,buildingCells,canPlace,type Kind,type Building,type Resident,type HousingUnit} from '../../../lib/town';
-import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
+import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,FUND_CONTRIBUTOR,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
 import {residentFrame,simulationIndex,missionStage} from '../../../lib/simulation';
 import {DISTRICTS} from '../../../lib/district-labels';
 export class CommunityError extends Error{constructor(message:string,public status=400){super(message);}}
 const missionSelect='SELECT id,username,day,mission_id AS missionId,building_id AS buildingId,started_at AS startedAt,ready_at AS readyAt,expires_at AS expiresAt,claimed_at AS claimedAt,reward,from_x AS fromX,from_y AS fromY FROM daily_missions';
-const projectSelect='SELECT id,garden_id AS gardenId,item,title,district,goal,raised,created_at AS createdAt,completed_at AS completedAt,kind,x,y FROM neighborhood_projects';
+const projectSelect='SELECT id,garden_id AS gardenId,item,title,district,goal,raised,created_at AS createdAt,completed_at AS completedAt,kind,x,y,created_by AS createdBy FROM neighborhood_projects';
 const projectCells=(p:Pick<NeighborhoodProject,'item'|'x'|'y'>)=>buildingCells({kind:p.item as Kind,x:p.x!,y:p.y!});
 const nearestDistrict=(x:number,y:number,size:number)=>[...DISTRICTS].sort((a,b)=>Math.hypot(x-a.x*size/24,y-a.y*size/24)-Math.hypot(x-b.x*size/24,y-b.y*size/24))[0].name;
 export async function communitySnapshot(d:D1Database,now:number){const window=dailyWindow(now),[missions,projects,contributions]=await Promise.all([
@@ -12,11 +12,14 @@ export async function communitySnapshot(d:D1Database,now:number){const window=da
  d.prepare(projectSelect+' ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50').all<NeighborhoodProject>(),
  d.prepare('SELECT project_id AS projectId,username,SUM(amount) AS amount FROM project_contributions WHERE project_id IN (SELECT id FROM neighborhood_projects ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50) GROUP BY project_id,username').all<ProjectContribution>()
 ]);return {...window,dailyIds:dailyMissionIds(window.day),missions:missions.results,projects:projects.results,contributions:contributions.results};}
-const actions=new Set(['mission-start','mission-claim','project-create','project-contribute']);
+const actions=new Set(['mission-start','mission-claim','project-create','project-contribute','project-fund']);
 export async function communityAction(d:D1Database,data:Record<string,unknown>,identity:{canAdmin:boolean;self:string|null},now:number){
  const action=String(data.action);if(!actions.has(action))return false;
  if(action==='project-create'){
-  if(!identity.canAdmin||data.view==='player')throw new CommunityError('Solo l’amministratore può avviare un progetto.',403);
+  const official=identity.canAdmin&&data.view!=='player',creator=official?null:identity.canAdmin?String(data.username||'').replace(/^@/,'').toLowerCase():identity.self;
+  if(!official&&!(creator&&await d.prepare('SELECT 1 FROM home_units WHERE username=?').bind(creator).first()))throw new CommunityError('Collega prima un abitante con una casa per proporre un progetto.',403);
+  // Each resident keeps at most one open proposal, so nobody can fill all three slots alone.
+  const oneEach='AND NOT EXISTS(SELECT 1 FROM neighborhood_projects WHERE created_by=? AND completed_at IS NULL)',busyMessage=official?'Limite di 3 progetti attivi raggiunto.':'Limite di 3 progetti attivi raggiunto oppure hai già un progetto aperto.';
   const size=sizeOfTown(await d.prepare('SELECT map_size AS size FROM town_settings WHERE id=1').first<{size:number}>());
   if(data.kind!==undefined){
    const building=CIVIC_KINDS.find(c=>c.id===data.kind),x=Number(data.x),y=Number(data.y);if(!building)throw new CommunityError('Scegli un edificio pubblico del catalogo.');
@@ -25,16 +28,18 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
    const occupied=new Set([...tiles.results,...reserved.results.flatMap(projectCells)].map(c=>`${c.x},${c.y}`)),cuts=(await d.prepare('SELECT x,y FROM road_cuts').all<{x:number;y:number}>()).results;
    if(!canPlace(building.id,x,y,size,occupied,cuts))throw new CommunityError('Scegli un lotto libero ed edificabile, senza strade, bordi o altri progetti civici.');
    // shortcut: the plot is checked here and on every donation, not locked in SQL; a racing mayor build only makes donations fail with a clear error.
-   const result=await d.prepare("INSERT INTO neighborhood_projects (id,garden_id,item,title,district,goal,created_at,kind,x,y) SELECT ?,NULL,?,?,?,?,?,'civic',?,? WHERE (SELECT COUNT(*) FROM neighborhood_projects WHERE completed_at IS NULL)<3").bind(crypto.randomUUID(),building.id,building.name,nearestDistrict(x,y,size),building.cost,now,x,y).run();
-   if(!result.meta.changes)throw new CommunityError('Limite di 3 progetti attivi raggiunto.',409);return true;
+   const result=await d.prepare(`INSERT INTO neighborhood_projects (id,garden_id,item,title,district,goal,created_at,kind,x,y,created_by) SELECT ?,NULL,?,?,?,?,?,'civic',?,?,? WHERE (SELECT COUNT(*) FROM neighborhood_projects WHERE completed_at IS NULL)<3 ${oneEach}`).bind(crypto.randomUUID(),building.id,building.name,nearestDistrict(x,y,size),building.cost,now,x,y,creator,creator).run();
+   if(!result.meta.changes)throw new CommunityError(busyMessage,409);return true;
   }
   const item=GARDEN_ITEMS.find(i=>i.id===data.item),gardenId=String(data.gardenId||'');if(!item)throw new CommunityError('Scegli una miglioria del giardino.');
   const garden=await d.prepare("SELECT x,y FROM buildings WHERE id=? AND kind='garden'").bind(gardenId).first<{x:number;y:number}>();if(!garden)throw new CommunityError('Scegli un giardino esistente.');
   const district=nearestDistrict(garden.x,garden.y,size);
-  const result=await d.prepare("INSERT OR IGNORE INTO neighborhood_projects (id,garden_id,item,title,district,goal,created_at) SELECT ?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM buildings WHERE id=? AND kind='garden') AND NOT EXISTS(SELECT 1 FROM garden_decorations WHERE garden_id=? AND item=?) AND (SELECT COUNT(*) FROM neighborhood_projects WHERE completed_at IS NULL)<3").bind(crypto.randomUUID(),gardenId,item.id,item.name,district,item.price,now,gardenId,gardenId,item.id).run();
-  if(!result.meta.changes)throw new CommunityError('Miglioria già presente, progetto già avviato o limite di 3 progetti attivi raggiunto.',409);return true;
+  const result=await d.prepare(`INSERT OR IGNORE INTO neighborhood_projects (id,garden_id,item,title,district,goal,created_at,created_by) SELECT ?,?,?,?,?,?,?,? WHERE EXISTS(SELECT 1 FROM buildings WHERE id=? AND kind='garden') AND NOT EXISTS(SELECT 1 FROM garden_decorations WHERE garden_id=? AND item=?) AND (SELECT COUNT(*) FROM neighborhood_projects WHERE completed_at IS NULL)<3 ${oneEach}`).bind(crypto.randomUUID(),gardenId,item.id,item.name,district,item.price,now,creator,gardenId,gardenId,item.id,creator).run();
+  if(!result.meta.changes)throw new CommunityError(official?'Miglioria già presente, progetto già avviato o limite di 3 progetti attivi raggiunto.':'Miglioria già presente o in progetto, limite di 3 progetti attivi raggiunto oppure hai già un progetto aperto.',409);return true;
  }
- const username=String(data.username||'').replace(/^@/,'').toLowerCase();if(!identity.canAdmin&&username!==identity.self)throw new CommunityError('Puoi gestire soltanto il tuo abitante.',403);
+ const fund=action==='project-fund';if(fund&&(!identity.canAdmin||data.view==='player'))throw new CommunityError('Solo l’amministratore può usare il fondo comunale.',403);
+ const username=fund?FUND_CONTRIBUTOR:String(data.username||'').replace(/^@/,'').toLowerCase();if(!fund&&!identity.canAdmin&&username!==identity.self)throw new CommunityError('Puoi gestire soltanto il tuo abitante.',403);
+ if(!fund){
  const r=await d.prepare('SELECT username,wallet,job,paid_at AS paidAt,avatar,car_level AS carLevel FROM residents WHERE username=? AND EXISTS(SELECT 1 FROM home_units WHERE username=?)').bind(username,username).first<Resident>();if(!r)throw new CommunityError('Collega prima un abitante con una casa.',403);
  if(action==='mission-start'){
   const window=dailyWindow(now),mission=MISSION_CATALOG.find(m=>m.id===data.missionId);if(!mission||!dailyMissionIds(window.day).includes(mission.id))throw new CommunityError('Questa missione non fa parte della giornata attuale.');
@@ -52,12 +57,15 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
    d.prepare('UPDATE residents SET wallet=wallet+? WHERE username=? AND changes()>0 AND (SELECT COUNT(*) FROM daily_missions WHERE username=? AND claimed_at IS NOT NULL AND day=(SELECT day FROM daily_missions WHERE id=?))=3').bind(MISSION_DAY_BONUS,username,username,String(data.id||''))]);
   if(!result[0].meta.changes)throw new CommunityError('Missione ancora in corso, scaduta o ricompensa già riscossa.',409);return true;
  }
- const requested=Number(data.amount),requestId=String(data.requestId||'');if(!Number.isSafeInteger(requested)||requested<1||requested>50||!/^[a-f0-9-]{36}$/.test(requestId))throw new CommunityError('Scegli un contributo da 1 a 50 monete.');
+ }
+ const requested=Number(data.amount),requestId=String(data.requestId||'');if(!Number.isSafeInteger(requested)||requested<1||requested>(fund?1000000:50)||!/^[a-f0-9-]{36}$/.test(requestId))throw new CommunityError(fund?'Scegli quante monete del fondo usare.':'Scegli un contributo da 1 a 50 monete.');
  const project=await d.prepare(projectSelect+' WHERE id=?').bind(String(data.projectId||'')).first<NeighborhoodProject>();if(!project||project.completedAt||(project.kind==='garden'&&!project.gardenId))throw new CommunityError('Il progetto è già concluso o non è disponibile.',409);
  const amount=Math.min(requested,project.goal-project.raised),civic=project.kind==='civic',cells=civic?projectCells(project):[],buildingId=civicBuildingId(project.id);
+ // The town fund pays like a resident wallet, under the same race and plot guards.
+ const [payer,payerArgs]:[string,(string|number)[]]=fund?['UPDATE town_settings SET coins=coins-? WHERE id=1 AND coins>=?',[amount,amount]]:['UPDATE residents SET wallet=wallet-? WHERE username=? AND wallet>=?',[amount,username,amount]];
  const debit=civic
-  ?d.prepare(`UPDATE residents SET wallet=wallet-? WHERE username=? AND wallet>=? AND NOT EXISTS(SELECT 1 FROM project_contributions WHERE id=?) AND EXISTS(SELECT 1 FROM neighborhood_projects WHERE id=? AND raised=? AND completed_at IS NULL) AND NOT EXISTS(SELECT 1 FROM building_tiles WHERE ${cells.map(()=>'(x=? AND y=?)').join(' OR ')})`).bind(amount,username,amount,requestId,project.id,project.raised,...cells.flatMap(c=>[c.x,c.y]))
-  :d.prepare("UPDATE residents SET wallet=wallet-? WHERE username=? AND wallet>=? AND NOT EXISTS(SELECT 1 FROM project_contributions WHERE id=?) AND EXISTS(SELECT 1 FROM neighborhood_projects p JOIN buildings b ON b.id=p.garden_id WHERE p.id=? AND p.raised=? AND p.completed_at IS NULL AND b.kind='garden') AND NOT EXISTS(SELECT 1 FROM garden_decorations WHERE garden_id=? AND item=?)").bind(amount,username,amount,requestId,project.id,project.raised,project.gardenId,project.item);
+  ?d.prepare(`${payer} AND NOT EXISTS(SELECT 1 FROM project_contributions WHERE id=?) AND EXISTS(SELECT 1 FROM neighborhood_projects WHERE id=? AND raised=? AND completed_at IS NULL) AND NOT EXISTS(SELECT 1 FROM building_tiles WHERE ${cells.map(()=>'(x=? AND y=?)').join(' OR ')})`).bind(...payerArgs,requestId,project.id,project.raised,...cells.flatMap(c=>[c.x,c.y]))
+  :d.prepare(`${payer} AND NOT EXISTS(SELECT 1 FROM project_contributions WHERE id=?) AND EXISTS(SELECT 1 FROM neighborhood_projects p JOIN buildings b ON b.id=p.garden_id WHERE p.id=? AND p.raised=? AND p.completed_at IS NULL AND b.kind='garden') AND NOT EXISTS(SELECT 1 FROM garden_decorations WHERE garden_id=? AND item=?)`).bind(...payerArgs,requestId,project.id,project.raised,project.gardenId,project.item);
  // The last donation builds the public building on the reserved plot in the same transaction.
  const complete=civic?[
   d.prepare('INSERT INTO buildings (id,x,y,kind,username,color) SELECT ?,x,y,item,NULL,? FROM neighborhood_projects WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0').bind(buildingId,CIVIC_KINDS.find(c=>c.id===project.item)?.color||'#a8b6a0',project.id),
@@ -74,6 +82,6 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
   d.prepare('UPDATE neighborhood_projects SET raised=raised+? WHERE id=? AND changes()>0').bind(amount,project.id),
   ...complete
  ]);
- if(!result[0].meta.changes)throw new CommunityError('Saldo insufficiente, contributo già inviato o progressi cambiati. Aggiorna e riprova.',409);return true;
+ if(!result[0].meta.changes)throw new CommunityError(fund?'Fondo comunale insufficiente o progressi cambiati. Aggiorna e riprova.':'Saldo insufficiente, contributo già inviato o progressi cambiati. Aggiorna e riprova.',409);return true;
 }
 const sizeOfTown=(s:{size:number}|null)=>s?.size||24;
