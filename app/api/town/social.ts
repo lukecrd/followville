@@ -1,5 +1,5 @@
 import {colors,type Building,type HousingUnit,type Resident} from '../../../lib/town';
-import {SHOP_LICENSE,SHOP_KINDS,SHOP_PRODUCTS,SHOP_BUILDINGS,PARTY_THEMES,PARTY_FEE,PARTY_DURATION,PARTY_CAPACITY,type ResidentShop,type ShopOrder,type Friendship,type TownParty,type PartyAttendee,type SocialState,type Gathering} from '../../../lib/social';
+import {SHOP_LICENSE,SHOP_KINDS,SHOP_PRODUCTS,SHOP_BUILDINGS,PARTY_THEMES,PARTY_FEE,PARTY_DURATION,PARTY_CAPACITY,PARTY_REWARD,PARTY_FRIEND_BONUS,type ResidentShop,type ShopOrder,type Friendship,type TownParty,type PartyAttendee,type SocialState,type Gathering} from '../../../lib/social';
 import {dailyWindow} from '../../../lib/community';
 import {residentFrame} from '../../../lib/simulation';
 import {CommunityError} from './community';
@@ -12,7 +12,7 @@ export async function socialSnapshot(d:D1Database,identity:Identity,now:number):
  d.prepare('SELECT id,shop_id AS shopId,buyer,seller,product,price,day,created_at AS createdAt FROM shop_orders WHERE ?=1 OR buyer=? OR seller=? ORDER BY created_at DESC,id LIMIT 100').bind(identity.canAdmin?1:0,identity.self||'',identity.self||'').all<ShopOrder>(),
  d.prepare('SELECT id,first_user AS first,second_user AS second,requester,created_at AS createdAt,accepted_at AS acceptedAt FROM friendships WHERE accepted_at IS NOT NULL OR ?=1 OR first_user=? OR second_user=? ORDER BY created_at,id').bind(identity.canAdmin?1:0,identity.self||'',identity.self||'').all<Friendship>(),
  d.prepare(partiesSql+' WHERE ends_at>? ORDER BY cancelled_at IS NULL DESC,starts_at,id LIMIT 50').bind(now-86400000).all<TownParty>(),
- d.prepare('SELECT a.id,a.party_id AS partyId,a.username,a.joined_at AS joinedAt,a.departure_at AS departureAt,a.from_x AS fromX,a.from_y AS fromY FROM party_attendees a JOIN town_parties p ON p.id=a.party_id WHERE p.ends_at>? ORDER BY a.joined_at,a.id').bind(now-86400000).all<PartyAttendee>()
+ d.prepare('SELECT a.id,a.party_id AS partyId,a.username,a.joined_at AS joinedAt,a.departure_at AS departureAt,a.from_x AS fromX,a.from_y AS fromY,a.reward_day AS rewardDay FROM party_attendees a JOIN town_parties p ON p.id=a.party_id WHERE p.ends_at>? ORDER BY a.joined_at,a.id').bind(now-86400000).all<PartyAttendee>()
  ]);
  return {shops:shops.results.map(s=>({...s,products:JSON.parse(s.products) as string[]})),orders:orders.results,friendships:friendships.results,parties:parties.results.map(p=>({...p,active:!p.cancelledAt&&p.endsAt>now,live:!p.cancelledAt&&p.startsAt<=now&&p.endsAt>now})),attendees:attendees.results};
 }
@@ -22,7 +22,7 @@ export function socialResidentData(s:SocialState,residents:Resident[],buildings:
  for(const a of s.attendees){const party=s.parties.find(p=>p.id===a.partyId);if(party&&party.buildingId&&!party.cancelledAt&&now>=a.departureAt&&now<party.endsAt)gatherings.set(a.username,{buildingId:party.buildingId,title:party.title,departureAt:a.departureAt,endsAt:party.endsAt,fromX:a.fromX,fromY:a.fromY});}
  return {visits,gatherings};
 }
-const actions=new Set(['shop-open','shop-edit','shop-buy','shop-close','friend-request','friend-accept','friend-decline','friend-remove','party-create','party-admin-create','party-join','party-leave','party-cancel']);
+const actions=new Set(['shop-open','shop-edit','shop-buy','shop-close','friend-request','friend-accept','friend-decline','friend-remove','party-create','party-admin-create','party-join','party-leave','party-cancel','party-reward']);
 const uuid=(value:unknown)=>typeof value==='string'&&/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/.test(value);
 function label(value:unknown,min=3,max=32){const text=String(value||'').trim();if(text.length<min||text.length>max||/[\u0000-\u001f]/.test(text))throw new CommunityError(`Usa un nome da ${min} a ${max} caratteri.`);return text;}
 function productList(value:unknown,kind:string){if(!Array.isArray(value)||!value.length||value.length>3||new Set(value).size!==value.length||value.some(id=>!SHOP_PRODUCTS.some(p=>p.id===id&&p.kind===kind)))throw new CommunityError('Scegli da uno a tre prodotti del tuo negozio.');return JSON.stringify(value);}
@@ -66,6 +66,13 @@ export async function socialAction(d:D1Database,data:Record<string,unknown>,iden
   if(host==='__admin__')statements.push(d.prepare('UPDATE town_settings SET coins=coins-? WHERE id=1 AND changes()>0').bind(PARTY_FEE));
   else {statements.push(d.prepare('UPDATE residents SET wallet=wallet-? WHERE username=? AND changes()>0').bind(PARTY_FEE,username),d.prepare('UPDATE town_settings SET coins=coins+? WHERE id=1 AND changes()>0').bind(PARTY_FEE));if(from)statements.push(d.prepare('INSERT INTO party_attendees (id,party_id,username,joined_at,departure_at,from_x,from_y) SELECT ?,?,?,?,?,?,? WHERE changes()>0').bind(crypto.randomUUID(),id,username,now,Math.max(now,startsAt-5*60000),from.x,from.y));}
   const changed=await d.batch(statements);if(!changed[0].meta.changes)throw new CommunityError('Luogo già prenotato, saldo insufficiente oppure hai già una festa in programma.',409);return true;
+ }
+ if(action==='party-reward'){
+  const party=await d.prepare(partiesSql+' WHERE id=? AND cancelled_at IS NULL AND ends_at<=? AND ends_at>?').bind(String(data.id||''),now,now-86400000).first<TownParty>();if(!party)throw new CommunityError('La festa non è ancora finita o non è più disponibile.',409);
+  const day=dailyWindow(now).day,friend=await d.prepare('SELECT 1 FROM party_attendees a JOIN friendships f ON f.accepted_at IS NOT NULL AND ((f.first_user=? AND f.second_user=a.username) OR (f.second_user=? AND f.first_user=a.username)) WHERE a.party_id=?').bind(username,username,party.id).first(),reward=PARTY_REWARD+(friend?PARTY_FRIEND_BONUS:0);
+  // Guests must arrive at least 5 minutes before the end; one reward per day keeps group parties from minting coins.
+  const result=await d.batch([d.prepare('UPDATE party_attendees SET reward_day=? WHERE party_id=? AND username=? AND reward_day IS NULL AND joined_at<=? AND NOT EXISTS(SELECT 1 FROM party_attendees WHERE username=? AND reward_day=?)').bind(day,party.id,username,party.endsAt-5*60000,username,day),d.prepare('UPDATE residents SET wallet=wallet+? WHERE username=? AND changes()>0').bind(reward,username)]);
+  if(!result[0].meta.changes)throw new CommunityError('Premio già ritirato oggi, arrivo alla festa troppo tardi o partecipazione ritirata.',409);return true;
  }
  if(action==='party-cancel'){const result=await d.prepare('UPDATE town_parties SET cancelled_at=? WHERE id=? AND cancelled_at IS NULL AND ends_at>? AND (?=1 OR host=?)').bind(now,String(data.id||''),now,administrator?1:0,username).run();if(!result.meta.changes)throw new CommunityError('Puoi annullare solo la tua festa in corso o in programma.',403);return true;}
  if(action==='party-leave'){const changed=await d.prepare('DELETE FROM party_attendees WHERE party_id=? AND username=?').bind(String(data.id||''),username).run();if(!changed.meta.changes)throw new CommunityError('Non risulti tra i partecipanti.',409);return true;}

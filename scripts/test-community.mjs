@@ -3,7 +3,7 @@ import {readFile,readdir,mkdir} from 'node:fs/promises';
 import assert from 'node:assert/strict';
 const require=createRequire(import.meta.url),w=createRequire(require.resolve('wrangler/package.json')),{build}=w('esbuild'),{Miniflare}=w('miniflare');
 await mkdir('.sites-runtime',{recursive:true});
-await build({stdin:{contents:"export {MapScene} from './app/town-art';export * from './lib/community';export {CommunityPanel} from './app/community-panel';export {prepareResident,sampleResident,simulationIndex} from './lib/simulation';export {buildable,buildingCells,payroll,seniority} from './lib/town';",resolveDir:process.cwd()},bundle:true,packages:'external',platform:'node',format:'cjs',outfile:'.sites-runtime/community-check.cjs',jsx:'automatic'});
+await build({stdin:{contents:"export {MapScene} from './app/town-art';export * from './lib/community';export {CommunityPanel} from './app/community-panel';export {welcomeBackLines} from './app/welcome-back';export {prepareResident,sampleResident,simulationIndex} from './lib/simulation';export {buildable,buildingCells,payroll,seniority} from './lib/town';",resolveDir:process.cwd()},bundle:true,packages:'external',platform:'node',format:'cjs',outfile:'.sites-runtime/community-check.cjs',jsx:'automatic'});
 const api=require('../.sites-runtime/community-check.cjs');
 for(const [instant,day,reset]of [
  ['2026-10-18T21:59:59Z','2026-10-18','2026-10-18T22:00:00Z'],['2026-10-18T22:00:00Z','2026-10-19','2026-10-19T22:00:00Z'],
@@ -21,6 +21,10 @@ try{
  town=await ok();assert.equal(town.community.dailyIds.length,3);assert.equal(town.community.missions.length,0);
  assert.equal((await call({action:'mission-start',username:'alice',missionId:town.community.dailyIds[0]},'visitor')).status,403);
  assert.equal((await call({action:'mission-start',username:'bob',missionId:town.community.dailyIds[0]},'alice')).status,403);
+ // Streak: two complete days before today raise today's day bonus.
+ assert.equal(api.previousDay('2026-03-01'),'2026-02-28');assert.deepEqual([0,1,2,5,9].map(api.streakBonus),[0,10,20,50,50]);assert.equal(api.streakEnding(new Set(['2026-03-01','2026-02-28','2026-02-26']),'2026-03-01'),2,'a missed day breaks the streak');
+ for(const back of [1,2]){const day=api.daysBefore(town.community.day,back);for(const m of api.MISSION_CATALOG.slice(0,3))await d.prepare('INSERT INTO daily_missions (id,username,day,mission_id,building_id,started_at,ready_at,expires_at,claimed_at,reward,from_x,from_y) VALUES (?,?,?,?,NULL,1,1,1,1,20,1,1)').bind(crypto.randomUUID(),'alice',day,m.id).run();}
+ assert.equal((await ok()).community.streaks.alice,2,'streak counts back from yesterday while today is open');
  const daily=town.community.dailyIds,wallet=town.residents.find(r=>r.username==='alice').wallet;
  const starts=await Promise.all(daily.slice(0,2).map(missionId=>call({action:'mission-start',username:'alice',missionId,reward:99999},'alice')));assert.deepEqual(starts.map(x=>x.status).sort(),[200,409]);
  town=await ok();let run=town.community.missions[0];assert.equal(run.reward,api.MISSION_CATALOG.find(m=>m.id===run.missionId).reward);assert.ok(run.readyAt>run.startedAt+40000);
@@ -32,7 +36,7 @@ try{
  const claims=await Promise.all([call({action:'mission-claim',username:'alice',id:run.id},'alice'),call({action:'mission-claim',username:'alice',id:run.id},'alice')]);assert.deepEqual(claims.map(x=>x.status).sort(),[200,409]);assert.equal((await ok()).residents.find(r=>r.username==='alice').wallet,wallet+run.reward);
  assert.equal((await call({action:'mission-start',username:'alice',missionId:run.missionId},'alice')).status,409);
  let rewards=run.reward;for(const missionId of daily.filter(id=>id!==run.missionId)){town=await ok({action:'mission-start',username:'alice',missionId},'alice');const next=town.community.missions.find(m=>m.missionId===missionId);await d.prepare('UPDATE daily_missions SET ready_at=? WHERE id=?').bind(Date.now()-1,next.id).run();await ok({action:'mission-claim',username:'alice',id:next.id},'alice');rewards+=next.reward;}
- town=await ok();assert.equal(town.residents.find(r=>r.username==='alice').wallet,wallet+rewards+api.MISSION_DAY_BONUS,'full-day bonus paid once');assert.equal(town.community.missions.filter(m=>m.claimedAt!==null).length,3);assert.ok(rewards>=60&&rewards<=75);
+ town=await ok();assert.equal(town.residents.find(r=>r.username==='alice').wallet,wallet+rewards+api.MISSION_DAY_BONUS+api.streakBonus(2),'full-day bonus with streak paid once');assert.equal(town.community.streaks.alice,3);await d.prepare("DELETE FROM daily_missions WHERE username='alice' AND started_at=1").run();assert.equal(town.community.missions.filter(m=>m.claimedAt!==null).length,3);assert.ok(rewards>=60&&rewards<=75);
  // Previous-day rows cannot be claimed and do not block the next day.
  await d.prepare("UPDATE daily_missions SET day='2000-01-01',expires_at=?,claimed_at=NULL WHERE username='alice'").bind(Date.now()-1).run();assert.equal((await call({action:'mission-claim',username:'alice',id:run.id},'alice')).status,409);town=await ok({action:'mission-start',username:'alice',missionId:daily[0]},'alice');assert.equal(town.community.missions.length,1);
  const garden=town.buildings.find(b=>b.kind==='garden');
@@ -74,11 +78,13 @@ try{
  const fundBefore=town.coins;town=await ok({action:'project-fund',projectId:proposal.id,amount:5000,requestId:crypto.randomUUID()});
  assert.equal(town.coins,fundBefore-proposal.goal,'fund pays only what is missing');assert.ok(town.community.projects.find(p=>p.id===proposal.id).completedAt,'fund completes the building');assert.ok(town.community.contributions.some(c=>c.projectId===proposal.id&&c.username==='fondo comunale'));
  assert.ok(renderToStaticMarkup(React.createElement(api.CommunityPanel,{town,section:'projects',admin:true,active:'alice',busy:false,onClose(){},onSelect(){},onLocate(){},onClaim(){},onAction(){}})).includes('Fondo comunale'));
+ // Welcome back: only events after the last visit are listed.
+ {const fake={now:20,residents:[{username:'x',job:null,paidAt:0,payCredit:0}],social:{shops:[],orders:[{seller:'x',price:4,createdAt:10}],friendships:[],parties:[],attendees:[]},community:{projects:[{title:'Bar del borgo',completedAt:10,createdAt:5,createdBy:null}]}};const lines=api.welcomeBackLines(fake,'x',5);assert.ok(lines.some(l=>l.includes('venduto 1 prodotto'))&&lines.some(l=>l.includes('Bar del borgo')));assert.deepEqual(api.welcomeBackLines(fake,'x',15),[]);}
  // Missions go to the nearest building of the service.
  const near=[{id:'b',kind:'market',x:20,y:20},{id:'a',kind:'market',x:2,y:2},{id:'c',kind:'market',x:3,y:2}];assert.equal(api.missionTarget('market',near).id,'a');assert.equal(api.missionTarget('market',near,{x:19,y:18}).id,'b');assert.equal(api.missionTarget('market',near,{x:3,y:3}).id,'c');
  // Seniority: +1 coin per hour at 40, 120 and 240 worked hours.
  assert.deepEqual([0,39,40,120,240,999].map(h=>api.seniority(h*450000).bonus),[0,0,1,2,3,3]);assert.equal(api.payroll({job:'barista',paidAt:Date.now()-7*24*450000,payCredit:0,jobMs:120*450000},Date.now()).amount,40*5);assert.deepEqual(api.payroll({job:'barista',paidAt:Date.now()-7*24*450000,payCredit:0},Date.now()),{...api.payroll({job:'barista',paidAt:Date.now()-7*24*450000,payCredit:0},Date.now()),amount:120,tax:18,net:102});
  console.log('PASS: civic projects reserve plots, block mayor builds, cap competing donations and build once; seniority bonus levels.');
- console.log('PASS: Rome midnight and DST resets; three rotating daily missions; linked-account isolation; one active assignment; real avatar destination; timed and single reward claims; expired tasks and next-day availability.');
+ console.log('PASS: Rome midnight and DST resets; three rotating daily missions; streak bonus; linked-account isolation; one active assignment; real avatar destination; timed and single reward claims; expired tasks and next-day availability.');
  console.log('PASS: admin and resident projects; one open proposal each; town-fund donations; active limit; shared artwork; atomic capped contributions; idempotent request replays; competing final donations; balances and contributor totals; protected targets; persistence and role-specific panels.');
 }finally{await mf.dispose();}

@@ -2,6 +2,7 @@
 import {SocialPanel,type SocialTab} from './social-panel';
 import {screenPoint,zoomCamera,pinchMetric,Camera,MapPoint,fitCamera,cityCamera} from '../lib/camera';
 import {CommunityPanel} from './community-panel';
+import {WelcomeBack} from './welcome-back';
 import {TownHall} from './town-hall';
 import {MapZoom} from './map-zoom';
 import React,{useEffect,useLayoutEffect,useRef,useState} from 'react';
@@ -98,6 +99,7 @@ export default function HomePage(){
  {canAdmin&&<><button className={`dock-mode-button ${roleOpen?'active':''}`} aria-label="Scegli menu amministratore o giocatore" aria-expanded={roleOpen} aria-controls="role-menu" onClick={()=>{setRoleOpen(!roleOpen);setSection('map');setTool(null);}}><span className="dock-icon">{isAdmin?<ShieldCheck size={19}/>:<UserRound size={19}/>}</span><span>{isAdmin?'Admin':'Giocatore'}</span></button><span className="dock-separator"/></>}
  {menus.map(m=>{const ready=!isAdmin&&!!town&&(m.id==='townhall'&&!!town.session.self&&!!town.polls?.some(p=>p.closedAt===null&&p.closesAt>town.now&&p.ownChoice===null)||m.id==='missions'&&!!person?.mission&&person.mission.readyAt<=town.now||m.id==='jobs'&&(person?.pendingPay||0)>0||m.id==='social'&&!!town.social?.friendships.some(f=>f.acceptedAt===null&&f.requester!==activeName&&(f.first===activeName||f.second===activeName)));return <button key={m.id} className={section===m.id?'active':''} onClick={()=>{setMoving(null);setSection(section===m.id?'map':m.id);setRoleOpen(false);setTool(null);setError('');}} aria-label={ready?`${m.label} · nuove attività`:m.label} aria-pressed={section===m.id} aria-expanded={m.id==='map'?undefined:section===m.id}><span className="dock-icon"><m.icon size={20} strokeWidth={1.65}/>{(ready||m.id==='applications'&&people.some(p=>p.candidate))&&<i/>}</span><span>{m.label}</span>{m.id!=='map'&&<ChevronUp className={`menu-caret ${section===m.id?'opened':''}`} size={8}/>}</button>;})}
  <span className="dock-separator"/><button aria-label="Come si gioca" onClick={()=>{setSection('map');setRoleOpen(false);setError('');setModal({type:'help'});}}><span className="dock-icon"><HelpCircle size={19}/></span><span>Guida</span></button></nav></div>
+ {town&&!isAdmin&&activeName&&<WelcomeBack key={activeName} town={town} name={activeName}/>}
  {toast&&<div className="toast" role="status"><CheckCircle2 size={18}/>{toast}<button aria-label="Chiudi notifica" onClick={()=>setToast('')}><X size={14}/></button></div>}
  {error&&town&&!modal&&<div role="alert" className="error-toast">{error}<button onClick={()=>setError('')} aria-label="Chiudi errore"><X size={15}/></button></div>}
  {modal&&<div className="modal-backdrop" onMouseDown={e=>{if(e.target===e.currentTarget&&!busy)setModal(null);}}><div ref={dialog} role="dialog" aria-modal="true" aria-labelledby="modal-title" className={`modal ${modal.type==='help'?'help-modal':''}`}><button className="modal-close" disabled={busy} aria-label="Chiudi finestra" onClick={()=>setModal(null)}><X size={20}/></button>

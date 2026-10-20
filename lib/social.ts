@@ -1,4 +1,6 @@
 export const SHOP_LICENSE=90,PARTY_FEE=40,PARTY_DURATION=15*60000,PARTY_CAPACITY=20;
+// Staying at a party until it ends pays a small reward, once per resident per day; a friend there adds a little.
+export const PARTY_REWARD=10,PARTY_FRIEND_BONUS=5;
 export const SHOP_KINDS=[{id:'food',name:'Bottega del gusto',description:'Pizza, dolci e caffè per il quartiere.'},{id:'fashion',name:'Boutique',description:'Accessori e piccoli oggetti da collezionare.'},{id:'garage',name:'Officina',description:'Kit e accessori per gli amanti delle auto.'}] as const;
 export const SHOP_BUILDINGS=['cafe','market','mall','office'];
 export const SHOP_PRODUCTS=[
@@ -11,7 +13,7 @@ export type ResidentShop={id:string;buildingId:string|null;owner:string;name:str
 export type ShopOrder={id:string;shopId:string|null;buyer:string;seller:string;product:string;price:number;day:string;createdAt:number};
 export type Friendship={id:string;first:string;second:string;requester:string;createdAt:number;acceptedAt:number|null};
 export type TownParty={active?:boolean;live?:boolean;id:string;buildingId:string|null;host:string;title:string;theme:string;startsAt:number;endsAt:number;fee:number;createdAt:number;cancelledAt:number|null};
-export type PartyAttendee={id:string;partyId:string|null;username:string;joinedAt:number;departureAt:number;fromX:number;fromY:number};
+export type PartyAttendee={id:string;partyId:string|null;username:string;joinedAt:number;departureAt:number;fromX:number;fromY:number;rewardDay?:string|null};
 export type Gathering={buildingId:string;title:string;departureAt:number;endsAt:number;fromX:number;fromY:number};
 export type SocialState={shops:ResidentShop[];orders:ShopOrder[];friendships:Friendship[];parties:TownParty[];attendees:PartyAttendee[]};
 export const otherFriend=(f:Friendship,user:string)=>f.first===user?f.second:f.first;

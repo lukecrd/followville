@@ -1,5 +1,5 @@
 import {GARDEN_ITEMS,buildingCells,canPlace,type Kind,type Building,type Resident,type HousingUnit} from '../../../lib/town';
-import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,FUND_CONTRIBUTOR,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
+import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,FUND_CONTRIBUTOR,streakBonus,streakEnding,previousDay,daysBefore,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
 import {residentFrame,simulationIndex,missionStage} from '../../../lib/simulation';
 import {DISTRICTS} from '../../../lib/district-labels';
 export class CommunityError extends Error{constructor(message:string,public status=400){super(message);}}
@@ -7,11 +7,16 @@ const missionSelect='SELECT id,username,day,mission_id AS missionId,building_id 
 const projectSelect='SELECT id,garden_id AS gardenId,item,title,district,goal,raised,created_at AS createdAt,completed_at AS completedAt,kind,x,y,created_by AS createdBy FROM neighborhood_projects';
 const projectCells=(p:Pick<NeighborhoodProject,'item'|'x'|'y'>)=>buildingCells({kind:p.item as Kind,x:p.x!,y:p.y!});
 const nearestDistrict=(x:number,y:number,size:number)=>[...DISTRICTS].sort((a,b)=>Math.hypot(x-a.x*size/24,y-a.y*size/24)-Math.hypot(x-b.x*size/24,y-b.y*size/24))[0].name;
-export async function communitySnapshot(d:D1Database,now:number){const window=dailyWindow(now),[missions,projects,contributions]=await Promise.all([
+export async function communitySnapshot(d:D1Database,now:number){const window=dailyWindow(now),[missions,projects,contributions,complete]=await Promise.all([
  d.prepare(missionSelect+' WHERE day=?').bind(window.day).all<DailyMission>(),
  d.prepare(projectSelect+' ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50').all<NeighborhoodProject>(),
- d.prepare('SELECT project_id AS projectId,username,SUM(amount) AS amount FROM project_contributions WHERE project_id IN (SELECT id FROM neighborhood_projects ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50) GROUP BY project_id,username').all<ProjectContribution>()
-]);return {...window,dailyIds:dailyMissionIds(window.day),missions:missions.results,projects:projects.results,contributions:contributions.results};}
+ d.prepare('SELECT project_id AS projectId,username,SUM(amount) AS amount FROM project_contributions WHERE project_id IN (SELECT id FROM neighborhood_projects ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50) GROUP BY project_id,username').all<ProjectContribution>(),
+ d.prepare('SELECT username,day FROM daily_missions WHERE claimed_at IS NOT NULL AND day>=? GROUP BY username,day HAVING COUNT(*)>=3').bind(daysBefore(window.day,8)).all<{username:string;day:string}>()
+]);
+ // A streak stays alive until a whole day is missed, so it counts back from today or yesterday.
+ const byUser=new Map<string,Set<string>>();for(const c of complete.results)byUser.set(c.username,(byUser.get(c.username)||new Set()).add(c.day));
+ const streaks=Object.fromEntries([...byUser].map(([u,days])=>[u,streakEnding(days,window.day)||streakEnding(days,previousDay(window.day))]));
+ return {...window,dailyIds:dailyMissionIds(window.day),missions:missions.results,projects:projects.results,contributions:contributions.results,streaks};}
 const actions=new Set(['mission-start','mission-claim','project-create','project-contribute','project-fund']);
 export async function communityAction(d:D1Database,data:Record<string,unknown>,identity:{canAdmin:boolean;self:string|null},now:number){
  const action=String(data.action);if(!actions.has(action))return false;
@@ -52,9 +57,11 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
   if(!result.meta.changes)throw new CommunityError('Missione già svolta oggi oppure un’altra missione è ancora in corso.',409);return true;
  }
  if(action==='mission-claim'){
+  const runDay=(await d.prepare('SELECT day FROM daily_missions WHERE id=? AND username=?').bind(String(data.id||''),username).first<{day:string}>())?.day;if(!runDay)throw new CommunityError('Missione ancora in corso, scaduta o ricompensa già riscossa.',409);
+  const done=await d.prepare('SELECT day FROM daily_missions WHERE username=? AND claimed_at IS NOT NULL AND day>=? AND day<? GROUP BY day HAVING COUNT(*)>=3').bind(username,daysBefore(runDay,8),runDay).all<{day:string}>(),dayBonus=MISSION_DAY_BONUS+streakBonus(streakEnding(new Set(done.results.map(x=>x.day)),previousDay(runDay)));
   const result=await d.batch([d.prepare('UPDATE daily_missions SET claimed_at=? WHERE id=? AND username=? AND claimed_at IS NULL AND ready_at<=? AND expires_at>?').bind(now,String(data.id||''),username,now,now),d.prepare('UPDATE residents SET wallet=wallet+(SELECT reward FROM daily_missions WHERE id=? AND username=?) WHERE username=? AND changes()>0').bind(String(data.id||''),username,username),
    // Missions run one at a time, so only one claim can be the third of the day.
-   d.prepare('UPDATE residents SET wallet=wallet+? WHERE username=? AND changes()>0 AND (SELECT COUNT(*) FROM daily_missions WHERE username=? AND claimed_at IS NOT NULL AND day=(SELECT day FROM daily_missions WHERE id=?))=3').bind(MISSION_DAY_BONUS,username,username,String(data.id||''))]);
+   d.prepare('UPDATE residents SET wallet=wallet+? WHERE username=? AND changes()>0 AND (SELECT COUNT(*) FROM daily_missions WHERE username=? AND claimed_at IS NOT NULL AND day=(SELECT day FROM daily_missions WHERE id=?))=3').bind(dayBonus,username,username,String(data.id||''))]);
   if(!result[0].meta.changes)throw new CommunityError('Missione ancora in corso, scaduta o ricompensa già riscossa.',409);return true;
  }
  }

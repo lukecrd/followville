@@ -76,3 +76,9 @@ body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSyst
 .building:focus-visible,.citizen:focus-visible{filter:none}
 .building:focus-visible .building-footprint{fill:#79ded359;stroke:#137e88}
 .citizen:focus-visible{outline:2px solid #137e88;outline-offset:2px}
+
+/* "Mentre eri via": short summary of what changed since the last visit. */
+.welcome-back{position:fixed;left:50%;bottom:calc(150px + env(safe-area-inset-bottom));transform:translateX(-50%);width:min(420px,calc(100% - 32px));z-index:8;background:#fff;border:1px solid #d3dee6;border-radius:16px;padding:12px 14px;box-shadow:0 8px 32px #20384b1f;color:#243c51;font-size:13px}
+.welcome-back-head{display:flex;align-items:center;gap:8px;color:#137e88}.welcome-back-head b{flex:1;color:#243c51}.welcome-back-head button{border:0;background:transparent;color:#5d788e;padding:4px;cursor:pointer}
+.welcome-back ul{margin:8px 0 0;padding-left:18px;display:grid;gap:4px}
+.pay-deadline,.streak-line{display:flex;align-items:center;gap:6px}
