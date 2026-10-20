@@ -6,7 +6,7 @@ export const GROUND_COLOR='#e4ebdf',GARDEN_COLOR='#b5d1a5';
 export const MAP={ink:'#243c51',shadow:'#20384b',line:'#d3dee6',accent:'#137e88',select:'#79ded3',road:'#899ba6',roadEdge:'#7d909c',curb:'#f3f6f3',lane:'#eef3f6',rail:'#c3cfd6',sleeper:'#6f8391',railEdge:'#536d80',
  // Buildings and parks. Light comes from the top: top faces lightest, left (+y) walls `wall`, right (+x) walls `wallSide`.
  wall:'#f3f7f9',wallSide:'#c6d4dd',steel:'#52788c',glass:'#79aec5',glassSide:'#527e96',paving:'#dfe7e6',
- lawn:'#a9c792',lawnSide:'#8fae7f',leaf:'#4f8c69',leafLight:'#78a879',water:'#8ec3cc',amber:'#ebbf64',amberDark:'#b98a3e',blossom:'#e7aeaa'} as const;
+ lawn:'#a9c792',lawnSide:'#8fae7f',leaf:'#4f8c69',leafLight:'#78a879',water:'#8ec3cc',amber:'#ebbf64',amberDark:'#b98a3e',blossom:'#e7aeaa',red:'#d8665e'} as const;
 export const point=(x:number,y:number,size=BASE_SIZE)=>({x:800+(x-y)*720/size,y:110+(x+y)*360/size});
 export const terrainMargin=(size:number)=>Math.max(6,Math.round(size/4));
 export function terrainSeed(x:number,y:number){return (Math.imul(x+83,73428767)^Math.imul(y+61,912931))>>>0;}
