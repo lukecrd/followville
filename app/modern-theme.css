@@ -1,8 +1,8 @@
 /* FollowVille — contemporary miniature city, ink and turquoise controls. */
 :root{--ink:#243c51;--muted:#6c8293;--green:#197f86;--line:#dce5ec;--paper:#fff;--cream:#f0f5f8;--accent:#137e88;--nav:#20384b;--soft:#edf5f7}
 body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;font-feature-settings:"cv11","ss01"}
-.fullscreen-city .game{background:#e6ead3}
-.fullscreen-city .city-hud,.fullscreen-city .wallet-hud,.fullscreen-city .life-panel,.fullscreen-city .build-tray,.fullscreen-city .role-popover,.fullscreen-city .map-controls.map-zoom{background:#fffffff5;border:1px solid #ffffff;box-shadow:0 8px 32px #20384b12,0 1px 4px #20384b08;backdrop-filter:blur(12px)}
+.fullscreen-city .game{background:#e4ebdf}
+.fullscreen-city .city-hud,.fullscreen-city .wallet-hud,.fullscreen-city .life-panel,.fullscreen-city .build-tray,.fullscreen-city .role-popover,.fullscreen-city .map-controls.map-zoom{background:#fff;border:1px solid #ffffff;box-shadow:0 8px 32px #20384b12,0 1px 4px #20384b08;backdrop-filter:none}
 .fullscreen-city .city-hud{padding:16px 19px;border-radius:20px}
 .fullscreen-city .hud-leaf{background:var(--nav);color:#75ddd4;border-radius:13px;width:40px;height:43px;box-shadow:inset 0 1px #ffffff20}
 .fullscreen-city .hud-brand>div>span{color:#6a8295;font-size:9px;letter-spacing:2.3px;font-weight:700}
@@ -13,7 +13,7 @@ body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSyst
 .fullscreen-city .wallet-hud>span{color:#637c90;letter-spacing:1.4px;font-size:8px;font-weight:700}
 .fullscreen-city .wallet-hud>b{color:#263f54;font-size:27px;letter-spacing:-1px;font-weight:700;font-variant-numeric:tabular-nums}
 .fullscreen-city .wallet-hud>small{color:#718797;font-size:9px}
-.fullscreen-city .compact-dock{background:#20384bf5;border:1px solid #ffffff28;border-radius:22px;padding:8px 10px;box-shadow:0 12px 35px #1b334536,inset 0 1px #ffffff12;backdrop-filter:blur(14px)}
+.fullscreen-city .compact-dock{background:#20384b;border:1px solid #ffffff28;border-radius:22px;padding:8px 10px;box-shadow:0 12px 35px #1b334536,inset 0 1px #ffffff12;backdrop-filter:none}
 .fullscreen-city .compact-dock .dock-nav{gap:4px}
 .fullscreen-city .compact-dock .dock-nav>button{position:relative;color:#b6c9d6;border-radius:14px;height:54px;min-width:60px;width:68px;padding:7px 6px;font-size:9px;font-weight:550;gap:6px;transition:background .16s,color .16s}
 .fullscreen-city .compact-dock .dock-nav>button.active,.fullscreen-city.player-view .compact-dock .dock-nav>button.active{background:#79ded3;color:#153c46;box-shadow:inset 0 1px #ffffff60}
@@ -72,3 +72,7 @@ body{color:var(--ink);font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSyst
  .fullscreen-city .map-controls.map-zoom{bottom:calc(81px + env(safe-area-inset-bottom));padding:3px}.terrain-legend{font-size:7px;padding:6px 8px;bottom:88px;left:12px}.fullscreen-city .tool-hint{bottom:140px}
 }
 @media(prefers-reduced-motion:reduce){.fullscreen-city button,.fullscreen-city .catalog-item{transition:none}}
+/* Map focus and selection: teal footprint instead of SVG drop-shadow filters, which repaint on every pan frame. */
+.building:focus-visible,.citizen:focus-visible{filter:none}
+.building:focus-visible .building-footprint{fill:#79ded359;stroke:#137e88}
+.citizen:focus-visible{outline:2px solid #137e88;outline-offset:2px}

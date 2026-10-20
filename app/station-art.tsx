@@ -13,7 +13,7 @@ function Line({points,color,width=1}:{points:number[][];color:string;width?:numb
 export function StationArt({color='#7f9697'}:{color?:string}){
  return <g className="station-art" strokeLinejoin="round">
   <title>Stazione ferroviaria con atrio vetrato e banchina coperta</title>
-  <ellipse cx="5" cy="5" rx="43" ry="16" fill="#25465b" opacity=".12"/>
+  <ellipse cx="5" cy="5" rx="43" ry="16" fill="#20384b" opacity=".12"/>
 
   {/* A low stone plinth, with a clear railway-facing platform edge. */}
   <Face points={[[-27,-29,0],[27,-29,0],[27,19,0],[-27,19,0]]} fill="#c4d1d8"/>

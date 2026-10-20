@@ -6,13 +6,13 @@ function Surface({points,fill}:{points:number[][];fill:string}){return <polygon 
 function Line({points,color,width=1}:{points:number[][];color:string;width?:number}){return <polyline points={poly(points)} fill="none" stroke={color} strokeWidth={width} strokeLinecap="round" strokeLinejoin="round"/>;}
 function Shrub({x,y,small=false}:{x:number;y:number;small?:boolean}){
  return <g transform={`translate(${p(x,y,1.5)}) scale(${small?.7:1})`}>
-  <ellipse cy="1" rx="6" ry="2.7" fill="#3b7359" opacity=".14"/>
+  <ellipse cy="1" rx="6" ry="2.7" fill="#20384b" opacity=".12"/>
   <ellipse cy="-2" rx="5.5" ry="3.6" fill="#508b69"/>
   <ellipse cx="-1.4" cy="-3.7" rx="3.6" ry="2.5" fill="#80ab7c"/>
  </g>;
 }
 function GardenTree(){return <g transform={`translate(${p(-10,-10,1.5)})`}>
- <ellipse cy="2" rx="10" ry="4.2" fill="#41684e" opacity=".17"/>
+ <ellipse cy="2" rx="10" ry="4.2" fill="#20384b" opacity=".12"/>
  <path d="M-1.2 0v-20h2.8V0Z" fill="#9e8566"/>
  <path d="M0-11-5-17M1-16l5-5" fill="none" stroke="#9e8566" strokeWidth="1.6" strokeLinecap="round"/>
  <path d="M0-37c-8-1-12 4-12 10-6 8 0 17 10 17 9 2 17-3 16-11 2-8-4-15-14-16Z" fill="#4f8c69"/>
@@ -66,7 +66,7 @@ function Gazebo(){return <g className="garden-gazebo">
 export function GardenArt({items=[]}:{items?:string[]}){
  return <g className="garden-art" strokeLinejoin="round">
   <title>Giardino comune con prato, vialetti e aiuole</title>
-  <ellipse cy="4" rx="39" ry="15" fill="#345c45" opacity=".10"/>
+  <ellipse cy="4" rx="39" ry="15" fill="#20384b" opacity=".12"/>
   <Surface points={[[-21,-21,0],[21,-21,0],[21,21,0],[-21,21,0]]} fill="#a4b49a"/>
   <Surface points={[[-21,21,0],[21,21,0],[21,21,1.5],[-21,21,1.5]]} fill="#a5b49c"/>
   <Surface points={[[21,-21,0],[21,21,0],[21,21,1.5],[21,-21,1.5]]} fill="#8fa58c"/>

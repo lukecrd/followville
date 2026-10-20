@@ -11,7 +11,7 @@ function Hair({style,back=false}:{style:CharacterAppearance['hairStyle'];back?:b
 export function WalkingAvatar({color='#76938b',appearance,pose=RESTING_POSE}:{color?:string;appearance?:CharacterAppearance;pose?:WalkerPose}){
  const a=readAppearance(appearance,color),front=!!pose.face,headTransform=`translate(${pose.head.x} ${pose.head.y})`;
  return <g strokeLinecap="round" strokeLinejoin="round" data-character-style={a.outfit}>
-  <ellipse cy="1.8" rx="7.5" ry="3.2" fill="#355342" opacity=".13"/>
+  <ellipse cy="1.8" rx="7.5" ry="3.2" fill="#20384b" opacity=".12"/>
   <path data-walk="farLeg" d={pose.farLeg} fill="none" stroke={a.pants} strokeWidth="3.3"/>
   <path data-walk="farShoe" d={pose.farShoe} fill="none" stroke={a.shoes} strokeWidth="2.7"/>
   <path data-walk="farArm" d={pose.farArm} fill="none" stroke={a.skin} strokeWidth="2.6"/>

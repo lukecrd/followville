@@ -1,6 +1,9 @@
 import {BASE_SIZE} from './town';
-export const GROUND_COLOR='#e6ead3',MEADOW_COLOR='#d8e2bf',SOIL_COLORS=['#d9c8a0','#c4b088'];
-export const GARDEN_COLOR='#b9d2a5';
+// Map palette: cool sage ground, slate roads, one navy ink for text and shadows, teal for selection.
+// Rules: contact shadows use MAP.shadow at .12 opacity; labels are white pills with a .8 MAP.line
+// outline and MAP.ink text; no CSS filters or blur inside the map SVG (it repaints while panning).
+export const GROUND_COLOR='#e4ebdf',GARDEN_COLOR='#b5d1a5';
+export const MAP={ink:'#243c51',shadow:'#20384b',line:'#d3dee6',accent:'#137e88',select:'#79ded3',road:'#899ba6',roadEdge:'#7d909c',curb:'#f3f6f3',lane:'#eef3f6',rail:'#c3cfd6',sleeper:'#6f8391',railEdge:'#536d80'} as const;
 export const point=(x:number,y:number,size=BASE_SIZE)=>({x:800+(x-y)*720/size,y:110+(x+y)*360/size});
 export const terrainMargin=(size:number)=>Math.max(6,Math.round(size/4));
 export function terrainSeed(x:number,y:number){return (Math.imul(x+83,73428767)^Math.imul(y+61,912931))>>>0;}
