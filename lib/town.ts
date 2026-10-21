@@ -28,24 +28,26 @@ export const CATALOG = [
  {id:'cinema',name:'Cinema',cost:480,category:'Svago',desc:'Il grande schermo in città · 3 posti da addetto al cinema',color:'#ac94ac'},
  {id:'museum',name:'Museo',cost:560,category:'Svago',desc:'Arte e storia da scoprire · 3 posti da guida museale',color:'#b5aa8e'},
  {id:'sports',name:'Centro sportivo',cost:720,category:'Svago',desc:'Piscina e campi sportivi · 4 posti da istruttore',color:'#84b5b5'},
+ {id:'powerplant',name:'Centrale elettrica',cost:700,category:'Servizi',desc:'Porta la luce in ogni casa · 3 posti da elettricista · gli abitanti pagano la bolletta',color:'#c2a96a'},
+ {id:'watertower',name:'Acquedotto',cost:550,category:'Servizi',desc:'Acqua corrente per la città · 2 posti da tecnico idrico · gli abitanti pagano la bolletta',color:'#8ab0c2'},
  {id:'bridge',name:'Ponte',cost:220,category:'Trasporti',desc:'Collega due strade · lunghezza automatica e rampe incluse',color:'#adad98'},
  {id:'road',name:'Strada',cost:25,category:'Trasporti',desc:'Un tratto di strada da collegare alla rete esistente',color:'#a0aaa1'},
  {id:'station',name:'Stazione',cost:750,category:'Trasporti',desc:'Costruiscila nella fila 1, lungo la ferrovia',color:'#7f9697'},
 ] as const;
 export type Kind=typeof CATALOG[number]['id'];
 // World scale shared by artwork, moving actors and label clearance.
-const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
+const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,powerplant:1,watertower:.72,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
 export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
 export type Building={id:string;x:number;y:number;kind:Kind;username:string|null;color:string;bridgeAxis?:'x'|'y'|null;bridgeSpan?:number|null;plotSpan?:number|null};
-export type Resident={appearance?:CharacterAppearance;gathering?:Gathering;friendVisit?:{buildingId:string;username:string};mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
+export type Resident={appearance?:CharacterAppearance;gathering?:Gathering;friendVisit?:{buildingId:string;username:string};mission?:DailyMission;username:string;wallet:number;job:string|null;candidate:string|null;paidAt:number;payCredit?:number;feeCredit?:number;jobMs?:number;avatar:string;houseDecor:number;carLevel:number;pendingPay:number};
 export type Decoration={id:string;gardenId:string;username:string;item:string};
 export type Purchase={username:string;item:string};
 export type BoardMessage={id:string;buildingId:string;title:string;body:string;authorLabel:string;official:boolean;pinned:boolean;createdAt:number;own:boolean};
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
-export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports'];
+export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports','powerplant'];
 export const TRANSPORT_KINDS=['road','bridge'];
 export function footprint(kind:string){return kind==='stadium'?{width:5,height:5}:kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}
 type PlacedBuilding=Pick<Building,'x'|'y'|'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>;
@@ -95,17 +97,27 @@ export const JOBS=[
  {id:'cinema-staff',name:'Addetto al cinema',service:'cinema',wage:3,slots:3,desc:'Accompagna il pubblico tra film e spettacoli.'},
  {id:'museum-guide',name:'Guida museale',service:'museum',wage:4,slots:3,desc:'Racconta le collezioni ai visitatori.'},
  {id:'coach',name:'Istruttore sportivo',service:'sports',wage:4,slots:4,desc:'Organizza allenamenti e corsi al centro sportivo.'},
+ {id:'electrician',name:'Elettricista',service:'powerplant',wage:5,slots:3,desc:'Tieni accese le luci della città.'},
+ {id:'plumber',name:'Tecnico idrico',service:'watertower',wage:4,slots:2,desc:'Fai arrivare l’acqua in ogni casa.'},
  {id:'clerk',name:'Commerciante',service:'market',wage:3,slots:3,desc:'La vita dietro al bancone.'},
 ] as const;
 // Seniority: worked game hours in the current job unlock a wage bonus; changing job resets it.
 export const SENIORITY=[{hours:0,bonus:0,title:'Base'},{hours:40,bonus:1,title:'Avanzata'},{hours:120,bonus:2,title:'Senior'},{hours:240,bonus:3,title:'Master'}] as const;
 export function seniority(jobMs=0){const hours=Math.floor(jobMs/GAME_HOUR_MS),level=SENIORITY.filter(s=>hours>=s.hours).length-1;return {...SENIORITY[level],level,hours,next:SENIORITY[level+1]?.hours??null};}
 // shortcut: the bonus uses seniority stored at the last collection, so a level reached mid-period pays from the next collection.
-export function payroll(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,total=credit+workMs*(job?job.wage+seniority(r.jobMs).bonus:0);// Net pay and tax are both floored from the same total and the unpaid remainder carries over, so frequent small collections still pay the full tax over time.
- const pct=Math.round(CIVIC_TAX*100),net=job?Math.floor(total*(100-pct)/(100*GAME_HOUR_MS)):0,tax=job?Math.floor(total*pct/(100*GAME_HOUR_MS)):0;return {amount:net+tax,tax,net,credit:job?total-(net+tax)*GAME_HOUR_MS:credit,workMs,from,capped:r.paidAt<from};}
+type PayState=Pick<Resident,'job'|'paidAt'|'payCredit'|'feeCredit'|'jobMs'>;
+export function payroll(r:PayState,now:number,utilities:readonly UtilityId[]=[]){const job=JOBS.find(j=>j.id===r.job),credit=Math.max(0,r.payCredit||0),feeCredit=Math.max(0,r.feeCredit||0),from=Math.max(r.paidAt,now-MAX_BACKPAY_DAYS*GAME_DAY_MS),workMs=job?workedTime(from,now):0,wage=job?job.wage+seniority(r.jobMs).bonus:0,gross=workMs*wage;
+ // Net pay and the town's share (civic tax + bills per worked hour) keep separate remainders, so frequent small collections can't round the town's share away.
+ const pct=Math.round(CIVIC_TAX*100),den=100*Math.max(1,wage),bp=Math.round(UTILITIES.reduce((s,u)=>s+(utilities.includes(u.id)?u.rate:0),0)*100),fee=Math.min(den,pct*Math.max(1,wage)+bp),feePart=Math.floor(gross*fee/den),netTotal=credit+gross-feePart,feeTotal=feeCredit+feePart;
+ if(!job)return {amount:0,tax:0,bills:0,net:0,credit,feeCredit,workMs,from,capped:r.paidAt<from};
+ const net=Math.floor(netTotal/GAME_HOUR_MS),tax=Math.floor(feeTotal/GAME_HOUR_MS);return {amount:net+tax,tax,bills:fee?Math.floor(tax*bp/fee):0,net,credit:netTotal-net*GAME_HOUR_MS,feeCredit:feeTotal-tax*GAME_HOUR_MS,workMs,from,capped:r.paidAt<from};}
 // Share of every salary withheld for the town treasury, so residents' work funds new buildings.
 export const CIVIC_TAX=.15;
-export function salary(r:Pick<Resident,'job'|'paidAt'|'payCredit'|'jobMs'>,now:number){return payroll(r,now).net;}
+// Utility bills: coins per worked game hour, charged only while the town has the plant; they go to the town fund.
+export const UTILITIES=[{id:'power',name:'Luce',plant:'powerplant',rate:.3},{id:'water',name:'Acqua',plant:'watertower',rate:.2}] as const;
+export type UtilityId=typeof UTILITIES[number]['id'];
+export const activeUtilities=(buildings:Pick<Building,'kind'>[]):UtilityId[]=>UTILITIES.filter(u=>buildings.some(b=>b.kind===u.plant)).map(u=>u.id);
+export function salary(r:PayState,now:number,utilities:readonly UtilityId[]=[]){return payroll(r,now,utilities).net;}
 export function shiftsToAfford(price:number,hourlyWage:number){return Math.ceil(price/(WORK_HOURS*hourlyWage));}
 export const SHOP=[
  {id:'flower-box',name:'Balcone fiorito',price:90,type:'home',desc:'Fiori alle finestre della tua casa.',bit:1},

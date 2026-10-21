@@ -1,6 +1,6 @@
 import {useEffect,useState} from 'react';
 import {Sparkles,X} from 'lucide-react';
-import {Town,salary} from '../lib/town';
+import {Town,salary,activeUtilities} from '../lib/town';
 
 // Remembers the last visit in this browser only: a per-viewer convenience, so a missing value just hides the card.
 const key=(name:string)=>'followville:last-seen:'+name;
@@ -22,7 +22,7 @@ export function welcomeBackLines(town:Town,name:string,since:number){
  if(parties.length)lines.push(`${parties.length===1?'Una nuova festa in programma':`${parties.length} nuove feste in programma`}.`);
  const rewards=s?.attendees.filter(a=>a.username===name&&!a.rewardDay&&s.parties.some(p=>p.id===a.partyId&&!p.cancelledAt&&p.endsAt<=town.now))||[];
  if(rewards.length)lines.push('Il premio di una festa ti aspetta nella sezione Quartiere.');
- const pay=r?salary(r,town.now):0;
+ const pay=r?salary(r,town.now,activeUtilities(town.buildings??[])):0;
  if(pay>0)lines.push(`Stipendio da riscuotere: ✦ ${pay}.`);
  return lines;
 }
