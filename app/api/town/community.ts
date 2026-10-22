@@ -1,4 +1,4 @@
-import {GARDEN_ITEMS,buildingCells,canPlace,type Kind,type Building,type Resident,type HousingUnit} from '../../../lib/town';
+import {GARDEN_ITEMS,buildingCells,canPlace,payroll,activeUtilities,UTILITIES,GAME_HOUR_MS,type Kind,type Building,type Resident,type HousingUnit} from '../../../lib/town';
 import {dailyWindow,dailyMissionIds,MISSION_CATALOG,missionTarget,MISSION_DAY_BONUS,CIVIC_KINDS,FUND_CONTRIBUTOR,streakBonus,streakEnding,previousDay,daysBefore,civicBuildingId,type DailyMission,type NeighborhoodProject,type ProjectContribution} from '../../../lib/community';
 import {residentFrame,simulationIndex,missionStage} from '../../../lib/simulation';
 import {DISTRICTS} from '../../../lib/district-labels';
@@ -7,16 +7,26 @@ const missionSelect='SELECT id,username,day,mission_id AS missionId,building_id 
 const projectSelect='SELECT id,garden_id AS gardenId,item,title,district,goal,raised,created_at AS createdAt,completed_at AS completedAt,kind,x,y,created_by AS createdBy FROM neighborhood_projects';
 const projectCells=(p:Pick<NeighborhoodProject,'item'|'x'|'y'>)=>buildingCells({kind:p.item as Kind,x:p.x!,y:p.y!});
 const nearestDistrict=(x:number,y:number,size:number)=>[...DISTRICTS].sort((a,b)=>Math.hypot(x-a.x*size/24,y-a.y*size/24)-Math.hypot(x-b.x*size/24,y-b.y*size/24))[0].name;
-export async function communitySnapshot(d:D1Database,now:number){const window=dailyWindow(now),[missions,projects,contributions,complete]=await Promise.all([
+// Bills follow the plants that exist while people work: before a plant appears or disappears, every worker's pay so far is banked into their credits at the old rates.
+// shortcut: banking restarts the offline backpay cap from now; fine while plants change rarely, store per-plant build times if that changes.
+export const PLANT_KINDS:readonly string[]=UTILITIES.map(u=>u.plant);
+export async function bankPayroll(d:D1Database,now:number){
+ const [plants,workers]=await Promise.all([d.prepare("SELECT kind FROM buildings WHERE kind IN ('powerplant','watertower')").all<Pick<Building,'kind'>>(),d.prepare('SELECT username,job,paid_at AS paidAt,pay_credit AS payCredit,fee_credit AS feeCredit,job_ms AS jobMs FROM residents WHERE job IS NOT NULL').all<Resident>()]),utilities=activeUtilities(plants.results);
+ const updates=workers.results.map(r=>{const p=payroll(r,now,utilities);return d.prepare('UPDATE residents SET paid_at=?,job_ms=job_ms+?,pay_credit=?,fee_credit=? WHERE username=? AND paid_at=? AND job=? AND pay_credit=? AND fee_credit=?').bind(now,p.workMs,p.credit+p.net*GAME_HOUR_MS,p.feeCredit+p.tax*GAME_HOUR_MS,r.username,r.paidAt,r.job,r.payCredit||0,r.feeCredit||0);});
+ if(updates.length)await d.batch(updates);
+}
+const townKinds=async(d:D1Database)=>new Set((await d.prepare('SELECT DISTINCT kind FROM buildings').all<{kind:string}>()).results.map(b=>b.kind));
+export async function communitySnapshot(d:D1Database,now:number){const window=dailyWindow(now),[missions,projects,contributions,complete,kinds]=await Promise.all([
  d.prepare(missionSelect+' WHERE day=?').bind(window.day).all<DailyMission>(),
  d.prepare(projectSelect+' ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50').all<NeighborhoodProject>(),
  d.prepare('SELECT project_id AS projectId,username,SUM(amount) AS amount FROM project_contributions WHERE project_id IN (SELECT id FROM neighborhood_projects ORDER BY completed_at IS NULL DESC,created_at DESC,id LIMIT 50) GROUP BY project_id,username').all<ProjectContribution>(),
- d.prepare('SELECT username,day FROM daily_missions WHERE claimed_at IS NOT NULL AND day>=? GROUP BY username,day HAVING COUNT(*)>=3').bind(daysBefore(window.day,8)).all<{username:string;day:string}>()
+ d.prepare('SELECT username,day FROM daily_missions WHERE claimed_at IS NOT NULL AND day>=? GROUP BY username,day HAVING COUNT(*)>=3').bind(daysBefore(window.day,8)).all<{username:string;day:string}>(),
+ townKinds(d)
 ]);
  // A streak stays alive until a whole day is missed, so it counts back from today or yesterday.
  const byUser=new Map<string,Set<string>>();for(const c of complete.results)byUser.set(c.username,(byUser.get(c.username)||new Set()).add(c.day));
  const streaks=Object.fromEntries([...byUser].map(([u,days])=>[u,streakEnding(days,window.day)||streakEnding(days,previousDay(window.day))]));
- return {...window,dailyIds:dailyMissionIds(window.day),missions:missions.results,projects:projects.results,contributions:contributions.results,streaks};}
+ return {...window,dailyIds:dailyMissionIds(window.day,kinds),missions:missions.results,projects:projects.results,contributions:contributions.results,streaks};}
 const actions=new Set(['mission-start','mission-claim','project-create','project-contribute','project-fund']);
 export async function communityAction(d:D1Database,data:Record<string,unknown>,identity:{canAdmin:boolean;self:string|null},now:number){
  const action=String(data.action);if(!actions.has(action))return false;
@@ -47,7 +57,7 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
  if(!fund){
  const r=await d.prepare('SELECT username,wallet,job,paid_at AS paidAt,avatar,car_level AS carLevel FROM residents WHERE username=? AND EXISTS(SELECT 1 FROM home_units WHERE username=?)').bind(username,username).first<Resident>();if(!r)throw new CommunityError('Collega prima un abitante con una casa.',403);
  if(action==='mission-start'){
-  const window=dailyWindow(now),mission=MISSION_CATALOG.find(m=>m.id===data.missionId);if(!mission||!dailyMissionIds(window.day).includes(mission.id))throw new CommunityError('Questa missione non fa parte della giornata attuale.');
+  const window=dailyWindow(now),mission=MISSION_CATALOG.find(m=>m.id===data.missionId);if(!mission||!dailyMissionIds(window.day,await townKinds(d)).includes(mission.id))throw new CommunityError('Questa missione non fa parte della giornata attuale.');
   const buildings=await d.prepare('SELECT id,x,y,kind,username,color,bridge_axis AS bridgeAxis,bridge_span AS bridgeSpan,plot_span AS plotSpan FROM buildings').all<Building>(),units=await d.prepare('SELECT id,building_id AS buildingId,unit,username,color FROM home_units').all<HousingUnit>(),cuts=(await d.prepare('SELECT x,y FROM road_cuts').all<{x:number;y:number}>()).results,index=simulationIndex(buildings.results,units.results,cuts);
   const size=sizeOfTown(await d.prepare('SELECT map_size AS size FROM town_settings WHERE id=1').first<{size:number}>()),frame=residentFrame(r,buildings.results,now,size,units.results,cuts),from={x:Math.round(frame?.x??index.byUser.get(username)!.x),y:Math.round(frame?.y??index.byUser.get(username)!.y)},target=missionTarget(mission.kind,buildings.results,from);
   if(!target)throw new CommunityError('Questo servizio non è disponibile in città. Chiedi all’amministratore di costruirlo.');
@@ -83,6 +93,7 @@ export async function communityAction(d:D1Database,data:Record<string,unknown>,i
   d.prepare("INSERT OR IGNORE INTO garden_decorations (id,garden_id,username,item) SELECT ?,garden_id,'quartiere',item FROM neighborhood_projects WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0").bind('project-'+project.id,project.id),
   d.prepare('UPDATE neighborhood_projects SET completed_at=? WHERE id=? AND raised=goal AND completed_at IS NULL AND changes()>0').bind(now,project.id)
  ];
+ if(civic&&amount===project.goal-project.raised&&PLANT_KINDS.includes(project.item))await bankPayroll(d,now);
  const result=await d.batch([
   debit,
   d.prepare('INSERT INTO project_contributions (id,project_id,username,amount,created_at) SELECT ?,?,?,?,? WHERE changes()>0').bind(requestId,project.id,username,amount,now),

@@ -9,6 +9,8 @@ for(const [instant,day,reset]of [
  ['2026-10-18T21:59:59Z','2026-10-18','2026-10-18T22:00:00Z'],['2026-10-18T22:00:00Z','2026-10-19','2026-10-19T22:00:00Z'],
  ['2026-03-28T23:30:00Z','2026-03-29','2026-03-29T22:00:00Z'],['2026-10-24T22:30:00Z','2026-10-25','2026-10-25T23:00:00Z']
 ]){const value=api.dailyWindow(Date.parse(instant));assert.equal(value.day,day);assert.equal(new Date(value.resetsAt).toISOString(),new Date(reset).toISOString());assert.equal(new Set(api.dailyMissionIds(day)).size,3);}
+// Missions only use services the town has, so a removed library can't make a day impossible.
+for(let i=0;i<5;i++){const day='2026-11-0'+(i+1),ids=api.dailyMissionIds(day,new Set(['market','garden','station','clinic'])),all=api.dailyMissionIds(day,new Set(api.MISSION_CATALOG.map(m=>m.kind)));assert.equal(new Set(ids).size,3);assert.ok(!ids.includes('library-books'));assert.deepEqual(all,api.dailyMissionIds(day),'a full town keeps the usual rotation');assert.equal(api.dailyMissionIds(day,new Set(['market']))[0],'market-delivery','a small town gets its available mission first');}
 const built=await build({stdin:{contents:"import {GET,POST} from './app/api/town/route.ts';export default {fetch(r){return r.method==='POST'?POST(r):GET(r);}}",resolveDir:process.cwd()},bundle:true,write:false,format:'esm',platform:'browser',external:['cloudflare:workers'],define:{'import.meta.env.DEV':'false'}});
 const mf=new Miniflare({modules:true,script:built.outputFiles[0].text,compatibilityDate:'2026-05-15',d1Databases:['DB'],bindings:{SITE_OWNER_EMAIL:'owner@example.test'},inspectorPort:0});
 try{
