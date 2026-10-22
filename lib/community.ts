@@ -28,5 +28,5 @@ export function dailyMissionIds(day:string,kinds?:ReadonlySet<string>){const see
 // Nearest building of the service to the resident; ties fall back to id order so server and panel agree.
 export const missionTarget=(kind:string,buildings:Building[],from?:{x:number;y:number})=>buildings.filter(b=>b.kind===kind).sort((a,b)=>(from?Math.abs(a.x-from.x)+Math.abs(a.y-from.y)-Math.abs(b.x-from.x)-Math.abs(b.y-from.y):0)||a.id.localeCompare(b.id))[0];
 // Civic projects let residents fund public buildings; homes, transport and the unique town hall stay mayor-built.
-export const CIVIC_KINDS=CATALOG.filter(c=>!homes.includes(c.id)&&!TRANSPORT_KINDS.includes(c.id)&&c.id!=='townhall');
+export const CIVIC_KINDS=CATALOG.filter(c=>!homes.includes(c.id)&&!TRANSPORT_KINDS.includes(c.id)&&c.id!=='rail'&&c.id!=='townhall');
 export const civicBuildingId=(projectId:string)=>'project-'+projectId;

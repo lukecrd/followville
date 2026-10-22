@@ -111,6 +111,12 @@ try{
  assert.equal((await call({action:'build',x:29,y:10,kind:'cottage'})).status,409,'roads cannot be overwritten by buildings');
  assert.equal((await call({action:'remove',id:firstRoad.id})).status,400,'road connection protected');
  assert.equal((await call({action:'build',x:31,y:11,kind:'road'},playerHeaders)).status,403,'players cannot build roads');
+ // Railway: tracks start from row 1 or another track, may cross a street, are lifted from the ends only and cannot be moved.
+ const taken=new Set((await d.prepare('SELECT x,y FROM building_tiles').all()).results.map(c=>c.x+','+c.y)),col=Array.from({length:t.size-3},(_,i)=>i+1).find(x=>![4,12,20,28,36].includes(x)&&[1,2,3,4,5,6,7].every(y=>!taken.has(x+','+y)));assert.ok(col,'a free column for the test track');
+ assert.equal((await call({action:'build',x:col,y:3,kind:'rail'})).status,400,'isolated track denied');assert.equal((await call({action:'build',x:col,y:1,kind:'rail'},playerHeaders)).status,403,'players cannot lay tracks');
+ for(let y=1;y<=7;y++)t=await action({action:'build',x:col,y,kind:'rail'});assert.equal(t.buildings.filter(b=>b.kind==='rail').length,7,'the track crosses the row-6 street');
+ const trackAt=y=>t.buildings.find(b=>b.kind==='rail'&&b.y===y);assert.equal((await call({action:'remove',id:trackAt(3).id})).status,400,'a middle track cannot be lifted');assert.equal((await call({action:'move',id:trackAt(7).id,fromX:col,fromY:7,x:col+1,y:8})).status,400,'tracks are not moved');
+ for(let y=7;y>=1;y--)t=await action({action:'remove',id:trackAt(y).id});assert.ok(!t.buildings.some(b=>b.kind==='rail'),'tracks lifted from the end');
  t=await action({action:'remove',id:branch.id});assert.equal(t.coins,beforeRoads);t=await action({action:'remove',id:firstRoad.id});assert.equal(t.coins,beforeRoads);
  // Employer capacity protection applies to the new services too.
  const banks=t.buildings.filter(b=>b.kind==='bank');await action({action:'remove',id:banks[0].id});assert.equal((await call({action:'remove',id:banks[1].id})).status,400,'last bank with employees protected');

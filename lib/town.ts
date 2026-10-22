@@ -32,11 +32,12 @@ export const CATALOG = [
  {id:'watertower',name:'Acquedotto',cost:550,category:'Servizi',desc:'Acqua corrente per la città · 2 posti da tecnico idrico · gli abitanti pagano la bolletta',color:'#8ab0c2'},
  {id:'bridge',name:'Ponte',cost:220,category:'Trasporti',desc:'Collega due strade · lunghezza automatica e rampe incluse',color:'#adad98'},
  {id:'road',name:'Strada',cost:25,category:'Trasporti',desc:'Un tratto di strada da collegare alla rete esistente',color:'#a0aaa1'},
+ {id:'rail',name:'Binario',cost:40,category:'Trasporti',desc:'Un tratto di ferrovia collegato alla linea: il treno ci passerà',color:'#c3cfd6'},
  {id:'station',name:'Stazione',cost:750,category:'Trasporti',desc:'Costruiscila nella fila 1, lungo la ferrovia',color:'#7f9697'},
 ] as const;
 export type Kind=typeof CATALOG[number]['id'];
 // World scale shared by artwork, moving actors and label clearance.
-const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,powerplant:1,watertower:.72,tree:.65,garden:.78,fountain:.70,bridge:1,road:1};
+const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,powerplant:1,watertower:.72,tree:.65,garden:.78,fountain:.70,bridge:1,road:1,rail:1};
 export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
@@ -54,7 +55,9 @@ type PlacedBuilding=Pick<Building,'x'|'y'|'kind'|'bridgeAxis'|'bridgeSpan'|'plot
 export function buildingFootprint(b:Pick<Building,'kind'|'bridgeAxis'|'bridgeSpan'|'plotSpan'>){const span=Math.max(1,b.bridgeSpan||1);return b.kind==='bridge'?{width:b.bridgeAxis==='y'?1:span,height:b.bridgeAxis==='y'?span:1}:b.plotSpan?{width:b.plotSpan,height:b.plotSpan}:footprint(b.kind);}
 export function buildingCells(b:PlacedBuilding){const f=buildingFootprint(b);return Array.from({length:f.width},(_,dx)=>Array.from({length:f.height},(_,dy)=>({x:b.x+dx,y:b.y+dy}))).flat();}
 export function buildingCenter(b:PlacedBuilding){const f=buildingFootprint(b);return {x:b.x+(f.width-1)/2,y:b.y+(f.height-1)/2};}
-export function canPlace(kind:string,x:number,y:number,size:number,occupied:Set<string>,roadCuts:{x:number;y:number}[]=[]){return buildingCells({kind:kind as Kind,x,y}).every(c=>buildable(c.x,c.y,size,roadCuts)&&!occupied.has(`${c.x},${c.y}`));}
+// Tracks may also cross the base streets, as level crossings.
+export const railBuildable=(x:number,y:number,size:number)=>Number.isInteger(x)&&Number.isInteger(y)&&x>=1&&y>=1&&x<size-1&&y<size-1;
+export function canPlace(kind:string,x:number,y:number,size:number,occupied:Set<string>,roadCuts:{x:number;y:number}[]=[]){return buildingCells({kind:kind as Kind,x,y}).every(c=>(kind==='rail'?railBuildable(c.x,c.y,size):buildable(c.x,c.y,size,roadCuts))&&!occupied.has(`${c.x},${c.y}`));}
 export const APARTMENTS_PER_BUILDING=6;
 export type HousingUnit={id:string;buildingId:string;unit:number;username:string|null;color:string};
 export type Dwelling=Building&{buildingId:string;unit:number};

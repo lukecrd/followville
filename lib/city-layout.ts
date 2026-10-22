@@ -7,6 +7,8 @@ export function baseRoad(id:string):RoadCell|null{const m=/^base-road:(\d+),(\d+
 export type LayoutTarget={building:Building;roadCuts:RoadCell[];cells:RoadCell[];base:boolean};
 // Prepare topology once for all candidate lots; server validation uses the same planner.
 export function movePlanner(source:Building,size:number,buildings:Building[],roadCuts:RoadCell[]=[],reserved:RoadCell[]=[]){
+ // Tracks are laid and lifted piece by piece instead of moved, so the line never breaks.
+ if(source.kind==='rail')return ():LayoutTarget|null=>null;
  const base=!!baseRoad(source.id),remaining=buildings.filter(b=>b.id!==source.id),cuts=base?[...roadCuts,{x:source.x,y:source.y}]:roadCuts;
  const occupied=new Set([...remaining.flatMap(buildingCells),...reserved].map(c=>cellKey(c.x,c.y)));
  const roads=networkRoads(remaining,cuts),cells=roadCells(size,roads),links=new Map(transportCells(roads).map(c=>[cellKey(c.x,c.y),c]));
