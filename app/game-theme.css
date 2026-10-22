@@ -1,0 +1,101 @@
+/* FollowVille — game skin (Clash/FarmVille): parchment panels in a wooden frame, chunky 3D buttons, display font with a dark outline.
+   Loaded last: it only overrides colours, borders, shadows and fonts of modern-theme.css, never layout. */
+:root{--wood:#a8692f;--wood-dark:#6b3d16;--parchment:#fff4d6;--parchment-2:#fbe6b3;--grass:#5cb82e;--grass-dark:#2f7a17;--gold:#ffcf3a;--gold-dark:#c98a0c;--sky:#3aa6e8;--sky-dark:#1d6aa6;--brown-ink:#5a3415;--display:"Lilita One","Nunito",ui-rounded,system-ui,sans-serif}
+body{font-family:"Nunito",ui-rounded,system-ui,sans-serif;font-weight:700;color:var(--brown-ink)}
+.fullscreen-city .game{background:#8fcb52}
+
+/* Panels: parchment card inside a wooden frame with a solid bottom edge (no blur, cheap to paint). */
+.fullscreen-city .city-hud,.fullscreen-city .wallet-hud,.fullscreen-city .life-panel,.fullscreen-city .build-tray,.fullscreen-city .role-popover,.fullscreen-city .map-controls.map-zoom,.fullscreen-city .modal,.welcome-back,.fullscreen-city .toast{background:linear-gradient(180deg,var(--parchment),var(--parchment-2));border:3px solid var(--wood);box-shadow:0 5px 0 var(--wood-dark),0 10px 22px #2a180640,inset 0 2px #fffbea;color:var(--brown-ink)}
+.fullscreen-city .city-hud h1,.fullscreen-city .life-heading h2,.fullscreen-city .modal h2{font-family:var(--display);font-weight:400;letter-spacing:.3px;color:#fff;-webkit-text-stroke:5px var(--brown-ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--brown-ink)}
+.fullscreen-city .hud-leaf{background:linear-gradient(180deg,#8ee04f,var(--grass));color:#fff;border:2px solid var(--grass-dark);box-shadow:0 3px 0 var(--grass-dark),inset 0 2px #ffffff70}
+.fullscreen-city .hud-brand>div>span,.fullscreen-city .wallet-hud>span,.fullscreen-city .eyebrow,.fullscreen-city .life-section-title{color:var(--wood);font-weight:900}
+.fullscreen-city .hud-meta,.fullscreen-city .wallet-hud>small,.fullscreen-city .panel-intro,.fullscreen-city .modal-intro,.fullscreen-city .search-help{color:#8a6440}
+.fullscreen-city .hud-meta i{background:#d9b77f}
+
+/* Wallet: gold coin counter. */
+.fullscreen-city .wallet-hud>b{font-family:var(--display);font-weight:400;font-size:30px;letter-spacing:.5px;color:var(--gold);-webkit-text-stroke:5px var(--brown-ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--brown-ink)}
+
+/* Bottom dock: wooden plank, green 3D tile for the active tool. */
+.fullscreen-city .compact-dock{background:linear-gradient(180deg,#c17f3e,var(--wood) 45%,#8a5323);border:3px solid var(--wood-dark);box-shadow:0 6px 0 #4a2a0e,0 14px 30px #2a180650,inset 0 2px #e6a96a}
+.fullscreen-city .compact-dock .dock-nav>button{color:#fff4dc;font-weight:800;text-shadow:0 1px 0 #4a2a0e}
+.fullscreen-city .compact-dock .dock-nav>button:hover:not(.active){background:#ffffff22;color:#fff}
+.fullscreen-city .compact-dock .dock-nav>button.active,.fullscreen-city.player-view .compact-dock .dock-nav>button.active{background:linear-gradient(180deg,#9be65a,var(--grass));color:#fff;border:2px solid var(--grass-dark);box-shadow:0 3px 0 var(--grass-dark),inset 0 2px #ffffff80;text-shadow:0 1px 0 var(--grass-dark)}
+.fullscreen-city .compact-dock .dock-mode-button{background:#00000022;color:#fff4dc}
+.fullscreen-city .compact-dock .dock-separator{background:#4a2a0e66}
+.fullscreen-city .compact-dock .dock-icon svg{stroke-width:2.3}
+.fullscreen-city .dock-icon>i{background:#ff4d3d;border-color:#fff}
+
+/* Buttons: green primary, blue secondary, both pressable. */
+.fullscreen-city .primary,.fullscreen-city .life-panel .primary,.fullscreen-city .modal .primary{background:linear-gradient(180deg,#9be65a,var(--grass));color:#fff;border:2px solid var(--grass-dark);border-radius:14px;box-shadow:0 4px 0 var(--grass-dark),inset 0 2px #ffffff80;font-family:var(--display);font-weight:400;font-size:14px;letter-spacing:.4px;text-shadow:0 2px 0 var(--grass-dark)}
+.fullscreen-city .primary:hover{background:linear-gradient(180deg,#aaf06a,#66c535)}
+.fullscreen-city .primary:active:not(:disabled),.fullscreen-city .small-button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 var(--grass-dark)}
+.fullscreen-city .small-button{background:linear-gradient(180deg,#6cc4f5,var(--sky));border:2px solid var(--sky-dark);color:#fff;border-radius:11px;box-shadow:0 3px 0 var(--sky-dark),inset 0 2px #ffffff70;font-weight:800;text-shadow:0 1px 0 var(--sky-dark)}
+.fullscreen-city .small-button:hover{background:linear-gradient(180deg,#80d0f8,#4ab0ee)}
+.fullscreen-city .life-heading>button,.fullscreen-city .close-catalog{background:linear-gradient(180deg,#ff7b63,#e9503c);color:#fff;border:2px solid #a8301f;box-shadow:0 3px 0 #a8301f;border-radius:11px}
+.fullscreen-city .life-heading>button:hover,.fullscreen-city .close-catalog:hover{background:linear-gradient(180deg,#ff8f7a,#f05f4b);color:#fff}
+
+/* Inner cards: lighter parchment with a thin wood line. */
+.fullscreen-city .admin-treasury,.fullscreen-city .personal-balance,.fullscreen-city .player-identity,.fullscreen-city .mayor-office,.fullscreen-city .work-clock,.fullscreen-city .note,.fullscreen-city .life-panel .note,.fullscreen-city .board-form,.fullscreen-city .salary-box,.fullscreen-city .current-job,.fullscreen-city .community-score{background:#fffaea;border:2px solid #e2c48d;color:#7a5530}
+.fullscreen-city .admin-resident,.fullscreen-city .job-card,.fullscreen-city .shop-card,.fullscreen-city .garden-item,.fullscreen-city .board-message,.fullscreen-city .landmark-catalog .catalog-item{background:#fffdf4;border:2px solid #e2c48d;box-shadow:0 3px 0 #d7b273}
+.fullscreen-city .landmark-catalog .catalog-item:hover{background:#fff6d2;border-color:var(--gold-dark)}
+.fullscreen-city .admin-treasury b,.fullscreen-city .personal-balance>b,.fullscreen-city .admin-resident-name b,.fullscreen-city .assignment-row b,.fullscreen-city .job-card h3,.fullscreen-city .shop-card h3,.fullscreen-city .digital-profile h3,.fullscreen-city .garden-item h3,.fullscreen-city .catalog-info b,.fullscreen-city .role-popover b{color:var(--brown-ink);font-weight:900}
+.fullscreen-city .job-card-top>b,.fullscreen-city .shop-card-bottom>b,.fullscreen-city .garden-item b,.fullscreen-city .catalog-info small{color:var(--gold-dark);font-weight:900}
+.fullscreen-city .mayor-office>span,.fullscreen-city .job-symbol,.fullscreen-city .garden-symbol{background:linear-gradient(180deg,#ffe27a,var(--gold));color:var(--brown-ink);border:2px solid var(--gold-dark)}
+.fullscreen-city .board-message.official{border-left:5px solid var(--gold-dark);background:#fff6d2}
+.fullscreen-city .text-input,.fullscreen-city .life-panel .text-input,.fullscreen-city .modal .text-input,.fullscreen-city .catalog-search{background:#fff;border:2px solid #d7b273;color:var(--brown-ink);box-shadow:inset 0 2px 0 #00000010}
+.fullscreen-city .text-input:focus,.fullscreen-city .catalog-search:focus-within{outline:3px solid #ffcf3a99;border-color:var(--gold-dark)}
+.fullscreen-city .catalog-meta,.fullscreen-city .catalog-footer{color:#8a6440}
+.fullscreen-city .category-tabs button{color:#8a6440;font-weight:800}
+.fullscreen-city .category-tabs button.selected{color:#c25a00;border-color:#e88a12}
+.fullscreen-city .role-popover>button.selected,.fullscreen-city .role-popover>button:hover{background:#ffeab0}
+.fullscreen-city .modal-backdrop{background:#2a180670}
+.fullscreen-city .tool-hint{background:var(--brown-ink);border:2px solid var(--wood);color:#fff4dc}
+.fullscreen-city .map-zoom button{color:var(--brown-ink)}.fullscreen-city .map-zoom button:hover{background:#ffeab0;color:#c25a00}
+.fullscreen-city .map-zoom label>span{color:var(--wood)}.fullscreen-city .map-zoom input{accent-color:var(--grass)}
+.terrain-legend{background:var(--parchment);color:var(--brown-ink);border:2px solid var(--wood);font-weight:800}
+.welcome-back-head,.welcome-back-head b{color:var(--brown-ink)}
+.fullscreen-city button:focus-visible,.fullscreen-city a:focus-visible{outline:3px solid var(--gold);outline-offset:3px}
+
+/* Map: wooden district signs, gold selection. */
+.district-labels rect{fill:#fff4d6;stroke:var(--wood);stroke-width:2.5}
+.district-labels text{fill:var(--brown-ink);font-weight:900}
+.plot.buildable{stroke:#fff;fill:#ffffff18}.plot.buildable:hover,.plot.buildable:focus-visible{fill:#ffe14d66;stroke:#fff}
+.building:hover .building-footprint,.building:focus-visible .building-footprint{fill:#ffe14d80;stroke:#e88a12}
+.citizen:focus-visible{outline-color:#e88a12}
+
+@media(max-width:600px){.fullscreen-city .wallet-hud>b{font-size:24px}.fullscreen-city .city-hud h1{-webkit-text-stroke:4px var(--brown-ink)}}
+
+/* Community, social and voting panels: same parchment cards, wooden tabs, gold icons, green progress. */
+.community-panel .quest-summary,.quest-card,.project-card,.project-create,.social-form,.social-card,.friend-request,.poll-summary,.poll-create,.poll-card{background:#fffdf4;border:2px solid #e2c48d;box-shadow:0 3px 0 #d7b273}
+.quest-card.is-complete,.project-card.is-complete{background:#f1fbe4;border-color:#9fd36e;box-shadow:0 3px 0 #7fbf4a}
+.social-card.is-focused{border-color:var(--gold-dark);box-shadow:0 3px 0 var(--gold-dark),0 0 0 3px #ffcf3a55}
+.quest-summary b,.quest-card h3,.project-card h3,.social-card h3,.friend-row b,.friend-request b,.shop-products b,.poll-summary b,.poll-card h3,.community-empty h3,.social-empty h3,.project-totals>b,.social-section-title,.project-create-heading,.poll-create>summary{color:var(--brown-ink);font-weight:900}
+.quest-summary p,.quest-card p,.project-card p,.quest-reward small,.quest-card .quest-status,.project-create-heading small,.project-create .field-label,.project-district,.project-totals small,.project-totals>span,.project-footer>span,.project-supporters,.social-form .field-label,.product-picker legend,.product-picker>label,.social-meta,.social-location,.friend-row,.friend-row small,.friend-request small,.party-guests,.party-guests p,.poll-summary p,.poll-privacy,.poll-identity,.poll-create .field-label,.poll-card-meta,.poll-description,.poll-deadline,.poll-option small,.poll-vote-note,.poll-close p,.recent-purchases>span,.party-attendance{color:#8a6440}
+.quest-count,.quest-reward,.product-picker b,.shop-products small,.poll-identity b,.project-supporters b{color:var(--gold-dark);font-weight:900}
+.quest-card-footer .text-link,.project-footer .text-link,.social-card-footer .text-link,.poll-close>.text-link{color:#c25a00;font-weight:800}
+.community-symbol,.poll-summary>span,.friend-avatar,.product-symbol{background:linear-gradient(180deg,#ffe27a,var(--gold));color:var(--brown-ink);border:2px solid var(--gold-dark);box-shadow:0 2px 0 var(--gold-dark)}
+.is-complete .community-symbol{background:linear-gradient(180deg,#9be65a,var(--grass));color:#fff;border-color:var(--grass-dark);box-shadow:0 2px 0 var(--grass-dark)}
+.project-district>b,.is-complete .project-district>b,.civic-tabs>button>span{background:var(--gold);color:var(--brown-ink);font-weight:900}
+.community-progress{height:10px;background:#ead3a2;border:2px solid #c99a55;box-shadow:inset 0 2px 0 #00000014}
+.community-progress>i{background:linear-gradient(180deg,#9be65a,var(--grass));box-shadow:inset 0 2px #ffffff70}
+.social-tabs,.civic-tabs{background:#ead3a2;border:2px solid #c99a55}
+.social-tabs>button,.civic-tabs>button{color:#7a5530;font-weight:800}
+.social-tabs>button.selected,.civic-tabs>button[aria-pressed=true]{background:linear-gradient(180deg,#9be65a,var(--grass));color:#fff;border:2px solid var(--grass-dark);box-shadow:0 3px 0 var(--grass-dark),inset 0 2px #ffffff80;text-shadow:0 1px 0 var(--grass-dark)}
+.community-empty,.social-empty,.poll-empty{border:2px dashed #d7b273;background:#fffaea;color:#8a6440}
+.community-empty>svg,.social-empty svg,.poll-empty>svg{color:var(--gold-dark)}
+.shop-sales,.party-attendance,.recent-purchases>span,.poll-outcome{background:#fff3cf;color:#7a5530}
+.shop-products>div,.friend-row,.project-supporters,.poll-close,.poll-create[open]>summary{border-color:#ecd7ab}
+.social-search{background:#fff;border:2px solid #d7b273;color:#8a6440}.social-search input{color:var(--brown-ink)}
+.product-picker input,.poll-option input{accent-color:var(--grass)}
+.party-banner{background:linear-gradient(180deg,#ffd9f2,#f7c3ea);color:#8a2f74;font-weight:800}
+.party-card.is-live .party-banner{background:linear-gradient(180deg,#c9f29c,#9be65a);color:var(--grass-dark)}
+.party-friends{color:var(--grass-dark)}
+.poll-card-meta .poll-open,.poll-voted,.poll-option-content>span>small,.poll-option-content>svg{color:var(--grass-dark)}
+.poll-card-meta .poll-open i{background:var(--grass)}
+.poll-option{background:#fff;border:2px solid #e2c48d}
+.poll-option.selected{border-color:var(--grass)}
+.poll-option-fill,.poll-option.selected .poll-option-fill{background:#d9f3bd}
+.poll-option-content,.poll-option b{color:var(--brown-ink)}
+.life-empty>svg{color:var(--gold-dark)}
+.life-empty h3{font-family:var(--display);font-weight:400;font-size:22px;letter-spacing:.3px;color:var(--brown-ink)}
+.life-empty p{color:#8a6440}

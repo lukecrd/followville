@@ -1,4 +1,4 @@
-.civic-tabs{display:flex;gap:6px;padding:5px;background:#edf4f6;border:1px solid #e0eaee;border-radius:12px;margin:18px 0}
+.civic-tabs{display:flex;flex-direction:row;gap:6px;padding:5px;background:#edf4f6;border:1px solid #e0eaee;border-radius:12px;margin:18px 0}
 .civic-tabs>button{flex:1;display:flex;justify-content:center;align-items:center;gap:7px;padding:10px;border-radius:8px;font-size:12px;color:#77909c}
 .civic-tabs>button[aria-pressed=true]{background:white;color:#277d88;box-shadow:0 2px 8px #335e7610;font-weight:650}
 .civic-tabs>button>span{display:grid;place-items:center;min-width:18px;height:18px;padding:0 4px;border-radius:6px;background:#d8eeed;color:#287d7d;font-size:9px}
