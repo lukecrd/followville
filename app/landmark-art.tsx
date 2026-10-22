@@ -12,7 +12,49 @@ function Windows({x,y,w,d,h,rows=2}:{x:number;y:number;w:number;d:number;h:numbe
 // Flat sign plates: `left` lies on a +y facing wall, otherwise on a +x facing wall.
 const plate=(x:number,y:number,z:number,left=true)=>`matrix(1 ${left?.5:-.5} 0 1 ${p(x,y,z)})`;
 const face=(points:number[][])=>`M${poly(points)}Z`;
-export function TownHallArt({color='#a8b6a0'}:{color?:string}){return <g className="townhall-art"><title>Municipio · sede dell’amministratore e bacheca</title><Site large/><Block x={-8} y={-8} w={16} d={16} h={75} roof={MAP.steel}/><polygon points={poly([[-11,-11,75],[11,-11,75],[0,0,88]])} fill={MAP.steel}/><polygon points={poly([[11,-11,75],[11,11,75],[0,0,88]])} fill={MAP.ink}/><path d="M0-88V-103" stroke={MAP.sleeper} strokeWidth="1.3"/><path d="M0-103 14-98 0-94Z" fill={MAP.amber}/><g transform="translate(-8 -61)"><ellipse rx="5.8" ry="6.2" fill="#fff" stroke={MAP.line}/><path d="M0-4v4l3 2" stroke={MAP.ink} fill="none" strokeWidth=".9"/></g><Block x={-25} y={-22} w={50} d={44} h={30} roof={color}/><Windows x={-25} y={-22} w={50} d={44} h={30}/><polygon points={poly([[-28,23,22],[10,23,22],[13,30,22],[-28,30,22]])} fill={MAP.wall}/>{[-24,-13,-2,9].map(x=><path key={x} d={'M'+p(x,29,22)+'L'+p(x,29,1)} stroke="#fff" strokeWidth="2.8"/>)}<polygon points={poly([[-5,22,0],[5,22,0],[5,22,16],[-5,22,16]])} fill={MAP.ink}/><path d="M-32 13 -10 24 1 18M-34 16-12 27 1 20" stroke={MAP.paving} strokeWidth="2" fill="none"/><g transform="matrix(1 .5 0 1 -42 -22)"><rect width="36" height="6" rx="1" fill={MAP.ink}/><text x="18" y="4.6" fontSize="4.1" fontWeight="650" letterSpacing=".4" textAnchor="middle" fill="#fff">MUNICIPIO</text></g><g transform="translate(-31 17)"><title>Ufficio dell’amministratore</title><path d="M-1.2-5v5M1.2-5v5" stroke={MAP.ink} strokeWidth="1.6"/><path d="M-2-10h4l1 6h-6Z" fill={MAP.steel}/><path d="M0-10v4" stroke={MAP.amber} strokeWidth="1"/><circle cy="-12" r="2.1" fill="#e4bd97"/><path d="M-2-13q1-3 4 0" fill={MAP.ink}/></g><g transform="translate(31 13)"><path d="M-6-2v10M6-2V8" stroke={MAP.sleeper} strokeWidth="1.3"/><rect x="-8" y="-13" width="16" height="12" rx="1" fill={MAP.amberDark} stroke={MAP.wall}/><path d="M-5-10h4v6h-4ZM1-10h4v4H1Z" fill="#fff"/><circle cx="-3" cy="-10" r=".7" fill={MAP.red}/></g></g>}
+// Town hall: a warm-stone Italian palazzo comunale with portico, central pediment, terracotta hip roof and a civic clock tower.
+const HALL={stone:'#f6efe3',stoneSide:'#dccfb9',trim:'#fffaf1',base:'#cfc4b3',baseSide:'#b5aa98',roof:'#c8775a',roofSide:'#a65f46',roofBack:'#d99475',flagGreen:'#3f8f5f'};
+function Box({x,y,z=0,w,d,h,top,left,right}:{x:number;y:number;z?:number;w:number;d:number;h:number;top:string;left:string;right:string}){const t=z+h;return <><polygon points={poly([[x,y+d,z],[x+w,y+d,z],[x+w,y+d,t],[x,y+d,t]])} fill={left}/><polygon points={poly([[x+w,y,z],[x+w,y+d,z],[x+w,y+d,t],[x+w,y,t]])} fill={right}/><polygon points={poly([[x,y,t],[x+w,y,t],[x+w,y+d,t],[x,y+d,t]])} fill={top}/></>;}
+// Hip roof over a w×d block (w ≥ d): back slopes, then whatever stands behind the ridge (children), then the front slopes that cover its base.
+function HipRoof({x,y,z,w,d,h,children}:{x:number;y:number;z:number;w:number;d:number;h:number;children?:React.ReactNode}){const yc=y+d/2,a=[x+d/2,yc,z+h],b=[x+w-d/2,yc,z+h];return <><polygon points={poly([[x,y,z],[x+w,y,z],b,a])} fill={HALL.roofBack}/><polygon points={poly([[x,y,z],[x,y+d,z],a])} fill={HALL.roofBack}/>{children}<polygon points={poly([[x,y+d,z],[x+w,y+d,z],b,a])} fill={HALL.roof}/><polygon points={poly([[x+w,y,z],[x+w,y+d,z],b])} fill={HALL.roofSide}/></>;}
+// Round-headed opening in face coordinates (width w, height h, top at 0).
+const arch=(w:number,h:number)=>`M0 ${h}V${w/2}A${w/2} ${w/2} 0 0 1 ${w} ${w/2}V${h}Z`;
+function Clock({at}:{at:string}){return <g transform={at}><circle r="4.2" fill="#fff" stroke={HALL.stoneSide} strokeWidth=".8"/><path d="M0 0V-3M0 0 2.2 1.2" stroke={MAP.ink} strokeWidth=".8" strokeLinecap="round"/></g>;}
+export function TownHallArt({color='#a8b6a0'}:{color?:string}){return <g className="townhall-art" data-accent={color}><title>Municipio · sede dell’amministratore e bacheca</title><Site large/>
+ {/* plinth and main block */}
+ <Box x={-26} y={-24} w={50} d={44} h={3} top={HALL.base} left={HALL.base} right={HALL.baseSide}/>
+ <Box x={-24} y={-22} z={3} w={46} d={40} h={32} top={HALL.stone} left={HALL.stone} right={HALL.stoneSide}/>
+ {/* string course and cornice on both visible faces */}
+ {[17.5,33.5].map(z=><React.Fragment key={z}><polygon points={poly([[-24,18.05,z],[22,18.05,z],[22,18.05,z+1.5],[-24,18.05,z+1.5]])} fill={HALL.trim}/><polygon points={poly([[22.05,-22,z],[22.05,18,z],[22.05,18,z+1.5],[22.05,-22,z+1.5]])} fill={HALL.trim}/></React.Fragment>)}
+ {/* portico arches below, arched windows above */}
+ {[-22,-16,11,16.5].map(x=><React.Fragment key={x}><path transform={plate(x,18.05,15)} d={arch(5,11)} fill={MAP.shadow} opacity=".82"/><path transform={plate(x+.7,18.05,31)} d={arch(3.6,9)} fill={MAP.glass} stroke={HALL.trim} strokeWidth=".7"/></React.Fragment>)}
+ {[16,9,2,-5,-12].map(y=><React.Fragment key={y}><path transform={plate(22.05,y,15,false)} d={arch(5,11)} fill={MAP.shadow} opacity=".7"/><path transform={plate(22.05,y-.7,31,false)} d={arch(3.6,9)} fill={MAP.glassSide} stroke={HALL.trim} strokeWidth=".7"/></React.Fragment>)}
+ {/* roof with the clock tower rising behind the ridge */}
+ <HipRoof x={-24} y={-22} z={35} w={46} d={40} h={10}>
+  <Box x={-7} y={-12} z={36} w={12} d={12} h={40} top={HALL.stone} left={HALL.stone} right={HALL.stoneSide}/>
+  <Clock at={plate(-1,.05,66)}/><Clock at={plate(5.05,-6,66,false)}/>
+  <Box x={-8} y={-13} z={76} w={14} d={14} h={2} top={HALL.trim} left={HALL.trim} right={HALL.stoneSide}/>
+  <Box x={-6} y={-11} z={78} w={10} d={10} h={10} top={HALL.stone} left={HALL.stone} right={HALL.stoneSide}/>
+  <path transform={plate(-3.5,-.95,87)} d={arch(5,8)} fill={MAP.ink}/><path transform={plate(4.05,-3.5,87,false)} d={arch(5,8)} fill={MAP.ink}/>
+  <Box x={-7} y={-12} z={88} w={12} d={12} h={1.5} top={HALL.trim} left={HALL.trim} right={HALL.stoneSide}/>
+  <polygon points={poly([[-7,-12,89.5],[5,-12,89.5],[-1,-6,102]])} fill={HALL.roofBack}/><polygon points={poly([[-7,-12,89.5],[-7,0,89.5],[-1,-6,102]])} fill={HALL.roofBack}/><polygon points={poly([[-7,0,89.5],[5,0,89.5],[-1,-6,102]])} fill={HALL.roof}/><polygon points={poly([[5,-12,89.5],[5,0,89.5],[-1,-6,102]])} fill={HALL.roofSide}/>
+  <path d={`M${p(-1,-6,102)}v-15`} stroke={MAP.sleeper} strokeWidth="1"/><g transform={`translate(${p(-1,-6,116)})`}><path d="M0 0h4v6H0Z" fill={HALL.flagGreen}/><path d="M4 0h4v6H4Z" fill="#fff"/><path d="M8 0h4v6H8Z" fill={MAP.red}/></g>
+ </HipRoof>
+ {/* central avant-corps with pediment, balcony and the main door */}
+ <Box x={-9} y={18} z={3} w={18} d={7} h={36} top={HALL.stone} left={HALL.trim} right={HALL.stoneSide}/>
+ <polygon points={poly([[-10,25.05,39],[10,25.05,39],[0,25.05,47]])} fill={HALL.trim}/><polygon points={poly([[-7,25.1,40],[7,25.1,40],[0,25.1,45]])} fill={HALL.stone}/>
+ <polygon points={poly([[-10,17,39],[-10,25.6,39],[0,25.6,47],[0,17,47]])} fill={HALL.roof}/><polygon points={poly([[0,17,47],[0,25.6,47],[10,25.6,39],[10,17,39]])} fill={HALL.roofSide}/>
+ <g transform={plate(-8,25.1,37.8)}><rect width="16" height="3.4" rx=".6" fill={MAP.ink}/><text x="8" y="2.5" fontSize="2.1" fontWeight="650" letterSpacing=".12" textAnchor="middle" fill="#fff">MUNICIPIO</text></g>
+ <path transform={plate(-2.5,25.05,31)} d={arch(5,9)} fill={MAP.glass} stroke={HALL.trim} strokeWidth=".7"/>
+ <path transform={plate(-3,25.05,15)} d={arch(6,12)} fill={MAP.ink}/>
+ <Box x={-6} y={25} z={17} w={12} d={2.5} h={1.2} top={HALL.trim} left={HALL.trim} right={HALL.stoneSide}/>
+ <polygon points={poly([[-6,27.5,18.2],[6,27.5,18.2],[6,27.5,20.6],[-6,27.5,20.6]])} fill="none" stroke={HALL.stoneSide} strokeWidth=".6"/>
+ {/* steps, planters and lamps on the piazza */}
+ {[[25,3],[27,2],[29,1]].map(([y,h])=><Box key={y} x={-6} y={y} w={12} d={2} h={h} top={HALL.trim} left={HALL.base} right={HALL.baseSide}/>)}
+ {[-24,11].map(x=><Box key={x} x={x} y={21} w={12} d={4} h={1.6} top={MAP.lawn} left={MAP.lawnSide} right={MAP.lawnSide}/>)}
+ {[-24,11].flatMap(x=>[2.5,6,9.5].map(dx=>{const [cx,cy]=p(x+dx,23,2.3).split(',').map(Number);return <circle key={`${x}-${dx}`} cx={cx} cy={cy} r="1.3" fill={dx===6?MAP.blossom:MAP.amber}/>;}))}
+ {[-8,8].map(x=>{const [lx,ly]=p(x,29,0).split(',').map(Number);return <g key={x} transform={`translate(${lx} ${ly})`}><path d="M0 0v-15" stroke={MAP.ink} strokeWidth="1"/><circle cy="-16" r="1.8" fill={MAP.amber}/></g>;})}
+ <g transform="translate(-31 17)"><title>Ufficio dell’amministratore</title><path d="M-1.2-5v5M1.2-5v5" stroke={MAP.ink} strokeWidth="1.6"/><path d="M-2-10h4l1 6h-6Z" fill={MAP.steel}/><path d="M0-10v4" stroke={MAP.amber} strokeWidth="1"/><circle cy="-12" r="2.1" fill="#e4bd97"/><path d="M-2-13q1-3 4 0" fill={MAP.ink}/></g><g transform="translate(31 13)"><path d="M-6-2v10M6-2V8" stroke={MAP.sleeper} strokeWidth="1.3"/><rect x="-8" y="-13" width="16" height="12" rx="1" fill={MAP.amberDark} stroke={MAP.wall}/><path d="M-5-10h4v6h-4ZM1-10h4v4H1Z" fill="#fff"/><circle cx="-3" cy="-10" r=".7" fill={MAP.red}/></g></g>}
 function Mall({color}:{color:string}){return <g><Site large/><Block x={-25} y={-20} w={50} d={40} h={24} roof={color}/><Windows x={-25} y={-20} w={50} d={40} h={24} rows={1}/><path d={face([[-14,-10,24.1],[-2,-10,24.1],[-2,6,24.1],[-14,6,24.1]])+face([[4,-10,24.1],[16,-10,24.1],[16,6,24.1],[4,6,24.1]])} fill={MAP.glass}/><polygon points={poly([[-10,20.1,0],[4,20.1,0],[4,20.1,11],[-10,20.1,11]])} fill={MAP.glassSide}/><polygon points={poly([[-12,20,12],[6,20,12],[6,26,12],[-12,26,12]])} fill={MAP.wall}/><g transform={plate(25.1,-6,22,false)}><rect width="12" height="9" rx="1.5" fill={MAP.amber}/><path d="M4 0v-1.5q2-3 4 0V0" fill="none" stroke={MAP.ink} strokeWidth=".9"/></g></g>}
 // Stadium: a rectangular bowl with raked stands, canopies over the two back stands and four low masts.
 const ST={ox:24,oy:19,ix:16,iy:11};

@@ -37,7 +37,7 @@ export const CATALOG = [
 ] as const;
 export type Kind=typeof CATALOG[number]['id'];
 // World scale shared by artwork, moving actors and label clearance.
-const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,powerplant:1,watertower:.72,tree:.65,garden:.78,fountain:.70,bridge:1,road:1,rail:1};
+const BUILDING_SCALES:Record<Kind,number>={cottage:.50,villa:.65,loft:.58,apartment:.78,office:.80,cafe:.60,market:.72,bank:.74,library:.76,clinic:.74,school:.80,station:.82,firestation:.75,police:.75,townhall:1.08,cinema:.72,museum:.76,hospital:1,mall:1,stadium:2.5,zoo:1.5,amusement:1.5,sports:1,powerplant:1,watertower:.72,tree:.65,garden:.78,fountain:.70,bridge:1,road:1,rail:1};
 export const buildingScale=(kind:Kind)=>BUILDING_SCALES[kind];
 export const PEDESTRIAN_SCALE=.30,CAR_SCALE=.30;
 
