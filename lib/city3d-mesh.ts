@@ -1,0 +1,26 @@
+// Small, dependency-free mesh builder. Coordinates are world x, height, world y.
+export type V3=[number,number,number];
+export type RGB=[number,number,number];
+export const rgb=(hex:string):RGB=>{let h=hex.replace('#','');if(h.length===3)h=[...h].map(c=>c+c).join('');return [parseInt(h.slice(0,2),16)/255,parseInt(h.slice(2,4),16)/255,parseInt(h.slice(4,6),16)/255];};
+export const tint=(c:string,k:number)=>{const v=rgb(c);return '#'+v.map(x=>Math.round(Math.max(0,Math.min(1,x*k))*255).toString(16).padStart(2,'0')).join('');};
+export const sub=(a:V3,b:V3):V3=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]];
+export const cross=(a:V3,b:V3):V3=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]];
+export const unit=(v:V3):V3=>{const l=Math.hypot(...v)||1;return v.map(x=>x/l) as V3;};
+export class Mesh {
+ data:number[]=[];
+ triangle(a:V3,b:V3,c:V3,color:string){const n=unit(cross(sub(b,a),sub(c,a))),v=rgb(color);for(const p of [a,b,c])this.data.push(...p,...n,...v);}
+ quad(a:V3,b:V3,c:V3,d:V3,color:string){this.triangle(a,b,c,color);this.triangle(a,c,d,color);}
+ box(x:number,y:number,z:number,w:number,h:number,d:number,color:string,roof=color){const a:V3=[x-w/2,y,z-d/2],b:V3=[x+w/2,y,z-d/2],c:V3=[x+w/2,y,z+d/2],e:V3=[x-w/2,y,z+d/2],up=(v:V3):V3=>[v[0],y+h,v[2]];this.quad(e,c,up(c),up(e),color);this.quad(b,a,up(a),up(b),color);this.quad(c,b,up(b),up(c),color);this.quad(a,e,up(e),up(a),color);this.quad(up(e),up(c),up(b),up(a),roof);}
+ cylinder(x:number,y:number,z:number,r:number,h:number,color:string,n=12,top=r){for(let i=0;i<n;i++){const a=i*2*Math.PI/n,b=(i+1)*2*Math.PI/n,p:V3=[x+Math.cos(a)*r,y,z+Math.sin(a)*r],q:V3=[x+Math.cos(b)*r,y,z+Math.sin(b)*r],u:V3=[x+Math.cos(a)*top,y+h,z+Math.sin(a)*top],v:V3=[x+Math.cos(b)*top,y+h,z+Math.sin(b)*top];this.quad(q,p,u,v,color);this.triangle([x,y+h,z],v,u,color);}}
+ sphere(x:number,y:number,z:number,r:number,color:string,rings=5,sectors=9,stretch:V3=[1,1,1]){const p=(i:number,j:number):V3=>{const a=i*Math.PI/rings,b=j*2*Math.PI/sectors;return [x+Math.sin(a)*Math.cos(b)*r*stretch[0],y+Math.cos(a)*r*stretch[1],z+Math.sin(a)*Math.sin(b)*r*stretch[2]];};for(let i=0;i<rings;i++)for(let j=0;j<sectors;j++)this.quad(p(i,j),p(i,j+1),p(i+1,j+1),p(i+1,j),color);}
+ beam(a:V3,b:V3,r:number,color:string){const v=unit(sub(b,a)),s=unit(cross(v,Math.abs(v[1])>.9?[1,0,0]:[0,1,0])),t=cross(v,s),points=(p:V3)=>Array.from({length:6},(_,i):V3=>{const u=i*Math.PI/3;return p.map((x,k)=>x+r*(s[k]*Math.cos(u)+t[k]*Math.sin(u))) as V3;});const p=points(a),q=points(b);for(let i=0;i<6;i++)this.quad(p[i],p[(i+1)%6],q[(i+1)%6],q[i],color);}
+ ring(x:number,y:number,z:number,outer:number,inner:number,h:number,color:string,n=32,squash=1){for(let i=0;i<n;i++){const a=i*2*Math.PI/n,b=(i+1)*2*Math.PI/n,p=(r:number,t:number,dy=0):V3=>[x+Math.cos(t)*r,y+dy,z+Math.sin(t)*r*squash];this.quad(p(outer,b),p(outer,a),p(outer,a,h),p(outer,b,h),color);this.quad(p(inner,a),p(inner,b),p(inner,b,h),p(inner,a,h),color);this.quad(p(inner,a,h),p(inner,b,h),p(outer,b,h),p(outer,a,h),color);}}
+ append(other:Mesh,x=0,y=0,z=0,angle=0,scale=1){const c=Math.cos(angle),s=Math.sin(angle);for(let i=0;i<other.data.length;i+=9){const v=other.data;this.data.push(x+scale*(v[i]*c-v[i+2]*s),y+v[i+1]*scale,z+scale*(v[i]*s+v[i+2]*c),v[i+3]*c-v[i+5]*s,v[i+4],v[i+3]*s+v[i+5]*c,v[i+6],v[i+7],v[i+8]);}}
+ // Convex silhouette projected onto the ground, aligned with the scene's sun.
+ shadow(source:Mesh,color='#a2b49a'){const pts:V3[]=[];for(let i=0;i<source.data.length;i+=9){const [x,y,z]=source.data.slice(i,i+3);if(y>.06)pts.push([x+y*.56,.032,z+y*.3]);}const sorted=[...new Map(pts.map(p=>[`${p[0].toFixed(3)},${p[2].toFixed(3)}`,p])).values()].sort((a,b)=>a[0]-b[0]||a[2]-b[2]),turn=(a:V3,b:V3,c:V3)=>(b[0]-a[0])*(c[2]-a[2])-(b[2]-a[2])*(c[0]-a[0]);if(sorted.length<3)return;const half=(ps:V3[])=>{const out:V3[]=[];for(const p of ps){while(out.length>1&&turn(out[out.length-2],out[out.length-1],p)<=0)out.pop();out.push(p);}return out;},h=[...half(sorted).slice(0,-1),...half([...sorted].reverse()).slice(0,-1)];for(let i=1;i<h.length-1;i++)this.triangle(h[0],h[i+1],h[i],color);}
+}
+export type Camera3D={target:V3;yaw:number;pitch:number;extent:number;aspect:number};
+export function cameraBasis(c:Camera3D){const forward:V3=[Math.sin(c.yaw)*Math.cos(c.pitch),Math.sin(c.pitch),Math.cos(c.yaw)*Math.cos(c.pitch)],right=unit(cross([0,1,0],forward)),up=cross(forward,right);return {right,up,forward};}
+export function project3D(p:V3,c:Camera3D){const b=cameraBasis(c),v=sub(p,c.target),dot=(u:V3)=>v[0]*u[0]+v[1]*u[1]+v[2]*u[2];return {x:dot(b.right)/(c.extent*c.aspect),y:dot(b.up)/c.extent,depth:dot(b.forward)};}
+export function groundPoint(nx:number,ny:number,c:Camera3D){const b=cameraBasis(c),p=c.target.map((v,i)=>v+b.right[i]*nx*c.extent*c.aspect+b.up[i]*ny*c.extent) as V3,t=p[1]/b.forward[1];return {x:p[0]-b.forward[0]*t,y:p[2]-b.forward[2]*t};}
+export function cameraMatrix(c:Camera3D){const b=cameraBasis(c),dot=(v:V3)=>-(v[0]*c.target[0]+v[1]*c.target[1]+v[2]*c.target[2]),sx=1/(c.extent*c.aspect),sy=1/c.extent,sz=-1/250;return new Float32Array([b.right[0]*sx,b.up[0]*sy,b.forward[0]*sz,0,b.right[1]*sx,b.up[1]*sy,b.forward[1]*sz,0,b.right[2]*sx,b.up[2]*sy,b.forward[2]*sz,0,dot(b.right)*sx,dot(b.up)*sy,dot(b.forward)*sz,1]);}
