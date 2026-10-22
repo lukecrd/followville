@@ -96,3 +96,18 @@ body{font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI"
 .terrain-legend i.ground{background:#e6ead3;border-color:#b9c0a2}.terrain-legend i.park{background:#b9d2a5;border-color:#95ac80}
 
 .moving-source{opacity:.35}.building-mode .street-hit{cursor:move}.building-mode .street-hit:hover{fill:#8cd3ca66}.tool-hint button:disabled{opacity:.45}
+
+/* Zoo and amusement park life: transform-only loops (origins are in each group's own user space, see landmark-art.tsx).
+   Reduced motion is already handled by the global `*{animation:none}` rule. */
+.ferris-wheel,.ferris-cabin,.giraffe-sway,.elephant-walk,.elephant-trunk,.carousel-top{transform-box:view-box;transform-origin:0 0}
+.ferris-wheel{animation:fv-spin 26s linear infinite}
+.ferris-cabin{animation:fv-spin 26s linear infinite reverse}
+.carousel-top{animation:fv-bob 1.4s ease-in-out infinite alternate}
+.giraffe-sway{animation:fv-sway 3.2s ease-in-out infinite alternate}
+.elephant-walk{animation:fv-stroll 5s ease-in-out infinite alternate}
+.elephant-trunk{transform-origin:12px -11px;animation:fv-trunk 1.3s ease-in-out infinite alternate}
+@keyframes fv-spin{to{transform:rotate(360deg)}}
+@keyframes fv-bob{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+@keyframes fv-sway{from{transform:rotate(-3deg)}to{transform:rotate(3deg)}}
+@keyframes fv-stroll{from{transform:translate(-4px,-2px)}to{transform:translate(4px,2px)}}
+@keyframes fv-trunk{from{transform:rotate(-12deg)}to{transform:rotate(10deg)}}
