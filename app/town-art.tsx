@@ -23,7 +23,11 @@ import {point,GROUND_COLOR,MAP} from '../lib/terrain';
 import {Landscape,MeadowTree} from './landscape';
 export {point} from '../lib/terrain';
 export function Tree({x=0,y=0,small=false}:{x?:number;y?:number;small?:boolean}){return <g transform={`translate(${x} ${y}) scale(${small?.7:1})`}><MeadowTree/></g>}
+// Kinds drawn from a Godot render (godot/render.gd -> public/sprites/<kind>.png) instead of SVG.
+// The render is 1 Godot unit = 1 lot, centred on the footprint, so undo the per-kind art scale.
+const GODOT_SPRITES:Kind[]=['townhall'];
 export function BuildingArt({kind,color='#d88162',mini=false,bridgeAxis='x',bridgeSpan=1,units=[],flowerUnits=[],gardenItems=[]}:{kind:Kind;color?:string;mini?:boolean;bridgeAxis?:'x'|'y'|'cross';bridgeSpan?:number;units?:HousingUnit[];flowerUnits?:number[];gardenItems?:string[]}){
+ if(GODOT_SPRITES.includes(kind))return <image href={`/sprites/${kind}.png`} x="-128" y="-200" width="256" height="256" transform={`scale(${1/buildingScale(kind)})`}/>;
  if(kind==='cottage'||kind==='villa'||kind==='loft')return <ModernHomeArt kind={kind} color={color} mini={mini}/>;
  if(kind==='bridge')return <BridgeArt color={color} axis={bridgeAxis} span={bridgeSpan}/>;
  if(kind==='station')return <StationArt color={color}/>;

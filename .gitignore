@@ -63,3 +63,6 @@ next-env.d.ts
 /deploy/vercel/next-env.d.ts
 /deploy/vercel/*.tsbuildinfo
 !/deploy/vercel/.env.example
+
+# godot
+/godot/.godot/
