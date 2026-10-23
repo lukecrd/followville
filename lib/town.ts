@@ -48,6 +48,8 @@ export type Purchase={username:string;item:string};
 export type BoardMessage={id:string;buildingId:string;title:string;body:string;authorLabel:string;official:boolean;pinned:boolean;createdAt:number;own:boolean};
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
+// Buildings drawn from the Godot project (godot/render.gd): public/sprites/<kind>.png on the map, public/models/<kind>.bin in the 3D view.
+export const GODOT_KINDS:Kind[]=['townhall'];
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports','powerplant'];
 export const TRANSPORT_KINDS=['road','bridge'];
 export function footprint(kind:string){return kind==='stadium'?{width:5,height:5}:kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}

@@ -14,7 +14,10 @@ function park(m:Mesh,seed:number,items:string[]=[]){m.box(0,0,0,.94,.035,.94,CIT
 export type AnimatedLandmark={kind:Kind;x:number;z:number;scale:number;seed:number};
 export type BuildingLook={gardenItems?:string[];houseDecor?:number;units?:HousingUnit[]};
 function pergola(m:Mesh,x:number,z:number,w=.4){for(const dx of [-1,1])for(const dz of [-1,1])m.box(x+dx*w/2,.04,z+dz*w/2,.018,.4,.018,CITY3D.wood);for(let i=0;i<5;i++)m.box(x-w/2+i*w/4,.44,z,.025,.02,w+.06,'#d0b68d');}
-export function buildingModel(b:Building,look:BuildingLook={}){const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
+// Models exported from Godot (godot/render.gd), filled by the 3D view once fetched; until then the procedural model is used.
+export const GODOT_MODELS=new Map<Kind,Mesh>();
+export function godotMesh(buffer:ArrayBuffer){const m=new Mesh();m.data=Array.from(new Float32Array(buffer));return m;}
+export function buildingModel(b:Building,look:BuildingLook={}){const godot=GODOT_MODELS.get(b.kind);if(godot)return godot;const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
  if(kind==='tree')return treeMesh(seed);
  if(kind==='garden'){park(m,seed,look.gardenItems);return m;}
  if(kind==='bridge'){const span=b.bridgeSpan||1,axis=b.bridgeAxis==='y',p=(u:number,v:number,h:number):V3=>axis?[v,h,u]:[u,h,v];for(let i=0;i<span*6;i++){const u=-span/2+i/6,v=u+1/6,h=bridgeHeight(u,span)/30,k=bridgeHeight(v,span)/30;m.quad(p(u,-.42,h),p(u,.42,h),p(v,.42,k),p(v,-.42,k),CITY3D.road);for(const side of [-.43,.43]){m.beam(p(u,side,h+.09),p(v,side,k+.09),.012,'#d9ded7');if(i%2===0)m.beam(p(u,side,h),p(u,side,h+.09),.01,CITY3D.metal);}}return m;}

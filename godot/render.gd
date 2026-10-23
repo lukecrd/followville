@@ -1,5 +1,6 @@
 extends SceneTree
-# Render every res://buildings/*.tscn to ../public/sprites/<name>.png
+# Render every res://buildings/*.tscn to ../public/sprites/<name>.png (2D map)
+# and export its triangles to ../public/models/<name>.bin (3D view, see lib/city3d-scene.ts).
 # with the same isometric 2:1 projection as the SVG map (tile = 60x30 SVG units).
 # Run from the repo root: & "C:/Program Files/Godot/Godot.exe" --path godot --script res://render.gd
 
@@ -42,6 +43,8 @@ func _run() -> void:
 
 	var out := ProjectSettings.globalize_path("res://").path_join("../public/sprites")
 	DirAccess.make_dir_recursive_absolute(out)
+	var models := ProjectSettings.globalize_path("res://").path_join("../public/models")
+	DirAccess.make_dir_recursive_absolute(models)
 	for f in DirAccess.get_files_at("res://buildings"):
 		if not f.ends_with(".tscn"):
 			continue
@@ -53,5 +56,38 @@ func _run() -> void:
 		var path := out.path_join(f.get_basename() + ".png")
 		var err := vp.get_texture().get_image().save_png(path)
 		print("rendered " if err == OK else "FAILED ", path)
+		_export_mesh(node, models.path_join(f.get_basename() + ".bin"))
 		node.queue_free()
 	quit()
+
+# Little-endian float32, 9 per vertex (position, normal, sRGB colour), 3 vertices per triangle:
+# the layout of Mesh.data in lib/city3d-mesh.ts. Only root CSG shapes are exported (Label3D text is skipped).
+func _export_mesh(scene: Node, path: String) -> void:
+	var out := PackedFloat32Array()
+	for csg in scene.find_children("*", "CSGShape3D", true, false):
+		if not csg.is_root_shape():
+			continue
+		var baked: Array = csg.get_meshes()
+		if baked.is_empty():
+			continue
+		var xf: Transform3D = csg.global_transform
+		var normal_basis := xf.basis.inverse().transposed()
+		var mesh: Mesh = baked[1]
+		for s in mesh.get_surface_count():
+			var mat: Material = mesh.surface_get_material(s)
+			if mat == null:
+				mat = csg.material_override
+			var c: Color = mat.albedo_color if mat is StandardMaterial3D else Color.WHITE
+			var arrays := mesh.surface_get_arrays(s)
+			var verts: PackedVector3Array = arrays[Mesh.ARRAY_VERTEX]
+			var normals: PackedVector3Array = arrays[Mesh.ARRAY_NORMAL]
+			var index := PackedInt32Array() if arrays[Mesh.ARRAY_INDEX] == null else PackedInt32Array(arrays[Mesh.ARRAY_INDEX])
+			var count := index.size() if index.size() > 0 else verts.size()
+			for k in count:
+				var v := index[k] if index.size() > 0 else k
+				var pos := xf * verts[v]
+				var n := (normal_basis * normals[v]).normalized()
+				out.append_array([pos.x, pos.y, pos.z, n.x, n.y, n.z, c.r, c.g, c.b])
+	var file := FileAccess.open(path, FileAccess.WRITE)
+	file.store_buffer(out.to_byte_array())
+	print("exported %d triangles to %s" % [out.size() / 27, path])
