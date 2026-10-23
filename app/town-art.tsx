@@ -55,41 +55,46 @@ export const SERVICE_VANS:Record<string,VanLivery>={firestation:{color:MAP.red,l
 // Which side of a car faces the camera for a world heading: the art faces +x; mirroring swaps x/y headings, the rear view covers -x/-y.
 export const carFacing=(dx:number,dy:number)=>({back:Math.abs(dx)>=Math.abs(dy)?dx<0:dy<0,mirror:Math.abs(dy)>Math.abs(dx)});
 export function CarArt({color='#75948a',sporty=false,van,back=false}:{color?:string;sporty?:boolean;van?:VanLivery;back?:boolean}){
+ // Modern hatchback: low body with a dark sill, raked tinted glasshouse under a dark panoramic roof, full-width LED bars and alloy wheels.
  // Every surface uses the same ground plane and vertical axis. The rear view mirrors the body along its length; e() keeps the end face on the visible side.
  const e=(x:number)=>back?-x:x,project=(x:number,y:number,z:number)=>`${e(x)-y},${(e(x)+y)*.5-z}`;
  const face=(vertices:number[][])=>vertices.map(([x,y,z])=>project(x,y,z)).join(' ');
  if(van)color=van.color;
- const roofHeight=sporty?22:van?28:25,roofRear=sporty?-8:van?-16:-10,roofFront=5;
- const side=face([[-19,9,4],[19,9,4],[19,9,13],[-19,9,13]]);
- const nose=face([[e(19),9,4],[e(19),-9,4],[e(19),-9,13],[e(19),9,13]]);
- const deck=face([[-19,-9,13],[19,-9,13],[19,9,13],[-19,9,13]]);
- const cabin=face([[-16,7,13],[roofRear,7,roofHeight],[roofFront,7,roofHeight],[12,7,13]]);
+ // belt: top of the body; glass meets it at tail/nose and the roof spans rear..front at roofHeight
+ const belt=11,roofHeight=sporty?18:van?27:20.5,roofRear=sporty?-8:van?-17:-9.5,roofFront=sporty?2:van?6:3.5,tail=van?-18:-15.5,nose=van?14:13.5;
+ const glass='#30434a',glassLight='#5f7f88',roofTone=van?color:'#24323a';
+ const side=face([[-19,9,4],[19,9,4],[19,9,belt],[-19,9,belt]]);
+ const front=face([[e(19),9,4],[e(19),-9,4],[e(19),-9,belt],[e(19),9,belt]]);
+ const deck=face([[-19,-9,belt],[19,-9,belt],[19,9,belt],[-19,9,belt]]);
+ const cabin=face([[tail,7.5,belt],[roofRear,7,roofHeight],[roofFront,7,roofHeight],[nose,7.5,belt]]);
  const roof=face([[roofRear,-7,roofHeight],[roofFront,-7,roofHeight],[roofFront,7,roofHeight],[roofRear,7,roofHeight]]);
- const windshield=face([[roofFront,-7,roofHeight],[roofFront,7,roofHeight],[12,7,13],[12,-7,13]]);
- const wheel=(x:number,y:number,near:boolean)=><g key={`${x}:${y}`} transform={`matrix(1 .5 0 1 ${e(x)-y} ${(e(x)+y)*.5-4})`}><circle r={near?4.6:3.9} fill={near?'#43534b':'#566159'}/><circle r="3.4" fill="#3c4742"/><circle r="2" fill="#a8b3a8"/><circle r=".8" fill="#e0e4d8"/></g>;
+ const windshield=face([[roofFront,-7,roofHeight],[roofFront,7,roofHeight],[nose,7.5,belt],[nose,-7.5,belt]]);
+ const rearGlass=face([[tail,-7.5,belt],[tail,7.5,belt],[roofRear,7,roofHeight],[roofRear,-7,roofHeight]]);
+ const wheel=(x:number,y:number,near:boolean)=><g key={`${x}:${y}`} transform={`matrix(1 .5 0 1 ${e(x)-y} ${(e(x)+y)*.5-4.2})`}><circle r={near?5:4.3} fill="#263033"/><circle r="3.2" fill="#d3dadc"/><circle r="2.1" fill="#5c696d"/><circle r=".8" fill="#eef2f3"/></g>;
+ const light=back?'#e2483d':'#f7f4e3';
  return <g strokeLinejoin="round" strokeLinecap="round">
   <ellipse cy="3.5" rx="28" ry="9" transform="rotate(26.565)" fill="#20384b" opacity=".12"/>
-  {[-11,12].map(x=>wheel(x,-9.5,false))}
-  <polygon points={deck} fill={color}/><polygon points={deck} fill="#fffbe8" opacity=".18"/>
-  <polygon points={side} fill={color}/><polygon points={side} fill="#263e33" opacity=".13"/>
-  <polygon points={nose} fill={color}/><polygon points={nose} fill="#fffbe8" opacity=".06"/>
-  <polygon points={cabin} fill={color}/><polygon points={cabin} fill="#fffbe8" opacity=".08"/>
-  <polygon points={roof} fill={color}/><polygon points={roof} fill="#fffbe8" opacity=".26"/>
-  {back?<polygon points={face([[-16,-7,13],[-16,7,13],[roofRear,7,roofHeight],[roofRear,-7,roofHeight]])} fill="#6e918c"/>:<polygon points={windshield} fill="#6e918c"/>}
-  {!back&&<polygon points={face([[roofFront+.9,-6,roofHeight-1.5],[roofFront+.9,6,roofHeight-1.5],[11,6,14.5],[11,-6,14.5]])} fill="#b8d5cc"/>}
-  <polygon points={face([[-14,7.2,14.5],[roofRear+1,7.2,roofHeight-1.8],[-2,7.2,roofHeight-1.8],[-2,7.2,14.5]])} fill="#8aaca4"/>
-  <polygon points={face([[-.5,7.2,14.5],[-.5,7.2,roofHeight-1.8],[roofFront-1,7.2,roofHeight-1.8],[10,7.2,14.5]])} fill="#8aaca4"/>
-  {!back&&<polyline points={face([[roofFront+1.9,-4.8,roofHeight-3],[10.1,-4.8,16]])} fill="none" stroke="#dfede1" strokeWidth=".8" opacity=".8"/>}
-  <polyline points={face([[-2,9.1,12.8],[-2,9.1,6.5],[5,9.1,6.5]])} fill="none" stroke="#355145" strokeWidth=".55" opacity=".35"/>
-  <polyline points={face([[0,9.2,11.5],[3,9.2,11.5]])} fill="none" stroke="#e2e6d6" strokeWidth=".8"/>
-  <polyline points={face([[-18,9.15,6.5],[18,9.15,6.5]])} fill="none" stroke="#294638" strokeWidth=".75" opacity=".25"/>
-  {[-11,12].map(x=>wheel(x,9.5,true))}
-  {[-1,1].map(sign=><polygon key={sign} points={face([[e(19.15),sign*4.7,7],[e(19.15),sign*8,7],[e(19.15),sign*8,10],[e(19.15),sign*4.7,10]])} fill={back?'#c4604e':'#f6edbd'}/>)}
-  <polygon points={face([[e(19.25),-2.5,6],[e(19.25),2.5,6],[e(19.25),2.5,8],[e(19.25),-2.5,8]])} fill={back?'#e8e4d0':'#52665a'}/>
-  <polyline points={face([[e(19.4),-8,4.8],[e(19.4),8,4.8]])} fill="none" stroke="#b5bfae" strokeWidth="1.2"/>
-  <polygon points={face([[-18,9.2,8],[-15.8,9.2,8],[-15.8,9.2,11],[-18,9.2,11]])} fill="#d49b7d"/>
-  {sporty&&<><polyline points={face([[-17,-9,15],[-17,9,15]])} fill="none" stroke="#506557" strokeWidth="2"/><polygon points={face([[-2,-2,roofHeight+.1],[roofFront,-2,roofHeight+.1],[roofFront,0,roofHeight+.1],[-2,0,roofHeight+.1]])} fill="#f6e9cd" opacity=".7"/></>}
-  {van&&<><polyline points={face([[-19,9.25,9.5],[19,9.25,9.5]])} fill="none" stroke={van.stripe} strokeWidth="1.8"/>{van.ladder&&<path d={[-3,3].map(y=>`M${face([[-15,y,roofHeight+1.2],[-1,y,roofHeight+1.2]])}`).join('')+[-13,-9,-5].map(x=>`M${face([[x,-3,roofHeight+1.2],[x,3,roofHeight+1.2]])}`).join('')} fill="none" stroke={MAP.wallSide} strokeWidth=".9"/>}<polygon points={face([[1,5,roofHeight],[4.5,5,roofHeight],[4.5,5,roofHeight+2.2],[1,5,roofHeight+2.2]])} fill="#52665a"/><polygon points={face([[1,-5,roofHeight+2.2],[4.5,-5,roofHeight+2.2],[4.5,5,roofHeight+2.2],[1,5,roofHeight+2.2]])} fill={van.light}/></>}
+  {[-11.5,12.5].map(x=>wheel(x,-9.5,false))}
+  <polygon points={deck} fill={color}/><polygon points={deck} fill="#fffbe8" opacity=".2"/>
+  <polygon points={side} fill={color}/><polygon points={side} fill="#263e33" opacity=".12"/>
+  <polygon points={face([[-19,9.1,4],[19,9.1,4],[19,9.1,5.6],[-19,9.1,5.6]])} fill="#232e31" opacity=".75"/>
+  <polygon points={front} fill={color}/><polygon points={front} fill="#fffbe8" opacity=".06"/>
+  {/* glasshouse: tinted side glass with a body-colour pillar, dark panoramic roof */}
+  <polygon points={cabin} fill={van?color:glass}/>
+  {van?<polygon points={face([[-.5,7.2,14.5],[-.5,7.2,roofHeight-2],[roofFront-1,7.2,roofHeight-2],[nose-1.5,7.2,14.5]])} fill={glass}/>
+   :<polygon points={face([[-2,7.15,belt],[-2,7.1,roofHeight],[-.6,7.1,roofHeight],[-.6,7.15,belt]])} fill={color}/>}
+  <polygon points={roof} fill={roofTone}/><polygon points={face([[roofRear+1.5,-5,roofHeight+.05],[roofFront-1.5,-5,roofHeight+.05],[roofFront-1.5,-1,roofHeight+.05],[roofRear+1.5,-1,roofHeight+.05]])} fill="#fff" opacity=".14"/>
+  {back?<polygon points={rearGlass} fill={glass}/>:<polygon points={windshield} fill={glass}/>}
+  {!back&&<polyline points={face([[roofFront+1.6,-4.5,roofHeight-2.2],[nose-1.4,-4.5,belt+2.2]])} fill="none" stroke={glassLight} strokeWidth="1.1" opacity=".9"/>}
+  <polyline points={face([[-1.3,9.15,belt-.5],[-1.3,9.15,5.8]])} fill="none" stroke="#263e33" strokeWidth=".5" opacity=".35"/>
+  <polyline points={face([[1.5,9.2,9.6],[4,9.2,9.6]])} fill="none" stroke="#eef2f3" strokeWidth=".7"/>
+  {[-11.5,12.5].map(x=>wheel(x,9.5,true))}
+  {/* full-width LED bars wrap round the corners; a dark grille or diffuser below */}
+  <polygon points={face([[e(19.15),-8,8.6],[e(19.15),8,8.6],[e(19.15),8,10],[e(19.15),-8,10]])} fill={light}/>
+  <polygon points={face([[e(16.5),9.15,8.6],[e(19),9.15,8.6],[e(19),9.15,10],[e(16.5),9.15,10]])} fill={light}/>
+  <polygon points={face([[e(19.2),-6,5],[e(19.2),6,5],[e(19.2),6,7],[e(19.2),-6,7]])} fill="#232e31" opacity=".85"/>
+  {sporty&&<polygon points={face([[-19.5,-8,belt+1.6],[-16,-8,belt+1.6],[-16,8,belt+1.6],[-19.5,8,belt+1.6]])} fill="#1d272b"/>}
+  {van&&<><polyline points={face([[-19,9.25,8],[19,9.25,8]])} fill="none" stroke={van.stripe} strokeWidth="1.8"/>{van.ladder&&<path d={[-3,3].map(y=>`M${face([[-15,y,roofHeight+1.2],[-1,y,roofHeight+1.2]])}`).join('')+[-13,-9,-5].map(x=>`M${face([[x,-3,roofHeight+1.2],[x,3,roofHeight+1.2]])}`).join('')} fill="none" stroke={MAP.wallSide} strokeWidth=".9"/>}<polygon points={face([[1,5,roofHeight],[4.5,5,roofHeight],[4.5,5,roofHeight+2.2],[1,5,roofHeight+2.2]])} fill="#52665a"/><polygon points={face([[1,-5,roofHeight+2.2],[4.5,-5,roofHeight+2.2],[4.5,5,roofHeight+2.2],[1,5,roofHeight+2.2]])} fill={van.light}/></>}
  </g>;
 }
 // One carriage facing +x; the locomotive gets the steel and glass livery.
