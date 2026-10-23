@@ -3,7 +3,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {Sun,Sunset,Moon,RotateCcw,RotateCw,Pause,Play} from 'lucide-react';
 import {Mesh,project3D,cameraBasis,cameraMatrix,groundPoint,rgb,type Camera3D,type V3} from '../lib/city3d-mesh';
 import {CITY3D,cityGeometry,landmarkMotion,pedestrianModel,vehicleModel,buildingModel,GODOT_MODELS,godotMesh} from '../lib/city3d-scene';
-import {buildingCells,buildingCenter,buildingFootprint,canPlace,CATALOG,GODOT_KINDS,type Building,type HousingUnit,type Resident,type Kind,type Decoration} from '../lib/town';
+import {buildingCells,buildingCenter,buildingFootprint,canPlace,CATALOG,GODOT_KINDS,godotAsset,type Building,type HousingUnit,type Resident,type Kind,type Decoration} from '../lib/town';
 import {baseRoadId,movePlanner} from '../lib/city-layout';
 import {bridgePlanner,canConnectRoad} from '../lib/bridges';
 import {cellKey,networkRoads,roadCells,type RoadCell} from '../lib/roads';
@@ -30,7 +30,9 @@ export function valid3DPlots(p:Pick<Props,'moving'|'tool'|'buildings'|'size'|'ro
 }
 function intersectBox(origin:V3,direction:V3,min:V3,max:V3){let near=-Infinity,far=Infinity;for(let i=0;i<3;i++){if(Math.abs(direction[i])<1e-8){if(origin[i]<min[i]||origin[i]>max[i])return Infinity;continue;}let a=(min[i]-origin[i])/direction[i],b=(max[i]-origin[i])/direction[i];if(a>b)[a,b]=[b,a];near=Math.max(near,a);far=Math.min(far,b);}return far>=Math.max(0,near)?Math.max(0,near):Infinity;}
 export default function City3D(props:Props){const labels=useRef<(HTMLSpanElement|null)[]>([]),canvas=useRef<HTMLCanvasElement>(null),latest=useRef(props),[godotModels,setGodotModels]=useState(0);
- useEffect(()=>{let live=true;Promise.all(GODOT_KINDS.filter(k=>!GODOT_MODELS.has(k)).map(k=>fetch(`/models/${k}.bin`).then(r=>{if(!r.ok)throw Error(r.statusText);return r.arrayBuffer();}).then(b=>{GODOT_MODELS.set(k,godotMesh(b));}).catch(()=>{/* keep the procedural model */}))).then(()=>{if(live)setGodotModels(v=>v+1);});return()=>{live=false;};},[]);latest.current=props;const state=useRef({yaw:Math.PI/4,pitch:.72,x:0,z:0,light:0,paused:false}),camera=useRef<Camera3D|null>(null),[light,setLight]=useState(0),[paused,setPaused]=useState(false),[hover,setHover]=useState('');
+ // Only the Godot models in use: every tree shape (treeMesh) plus each building, gardens per combination of extras.
+ const godotKeys=useMemo(()=>[...new Set([...(GODOT_KINDS.includes('tree')?['tree']:[]),...props.buildings.filter(b=>GODOT_KINDS.includes(b.kind)).map(b=>godotAsset(b.kind,props.decorations.filter(d=>d.gardenId===b.id).map(d=>d.item)))])].sort().join(' '),[props.buildings,props.decorations]);
+ useEffect(()=>{let live=true;Promise.all(godotKeys.split(' ').filter(k=>k&&!GODOT_MODELS.has(k)).map(k=>fetch(`/models/${k}.bin`).then(r=>{if(!r.ok)throw Error(r.statusText);return r.arrayBuffer();}).then(b=>{GODOT_MODELS.set(k,godotMesh(b));}).catch(()=>{/* keep the procedural model */}))).then(()=>{if(live)setGodotModels(v=>v+1);});return()=>{live=false;};},[godotKeys]);latest.current=props;const state=useRef({yaw:Math.PI/4,pitch:.72,x:0,z:0,light:0,paused:false}),camera=useRef<Camera3D|null>(null),[light,setLight]=useState(0),[paused,setPaused]=useState(false),[hover,setHover]=useState('');
  const appearanceKey=JSON.stringify([props.decorations,props.units,props.residents.map(r=>[r.username,r.houseDecor])]);
  const geometry=useMemo(()=>cityGeometry(props.buildings,props.size,props.roadCuts,{decorations:props.decorations,units:props.units,residents:props.residents}),[props.buildings,props.size,props.roadCuts,appearanceKey,godotModels]),geometryRef=useRef(geometry);geometryRef.current=geometry;
  const hoverPlacement=useRef('');

@@ -1,11 +1,11 @@
 import {Mesh,type V3,tint} from './city3d-mesh';
 import {readAppearance,type CharacterAppearance} from './appearance';
-import {buildingCells,buildingCenter,buildingFootprint,type Building,type Kind,type HousingUnit,type Resident,type Decoration} from './town';
+import {buildingCells,buildingCenter,buildingFootprint,godotAsset,type Building,type Kind,type HousingUnit,type Resident,type Decoration} from './town';
 import {cellKey,networkRoads,roadCells,type RoadCell} from './roads';
 import {bridgeHeight} from './bridges';
 
 export const CITY3D={ground:'#cbdcb6',grass:'#86b967',stone:'#e0dac6',wall:'#f5ecdc',glass:'#8ec9d5',roof:'#b7644e',metal:'#496a75',road:'#75838b',wood:'#a27d53',water:'#75cbdc',leaf:'#61935b'};
-export function treeMesh(seed=0){const m=new Mesh();m.cylinder(0,0,0,.035,.48,CITY3D.wood,6);m.sphere(0,.72,0,.31,seed%3===0?'#7ca768':CITY3D.leaf,4,7,[1,1.25,1]);m.sphere(-.12,.8,.05,.19,'#92b775',3,6);return m;}
+export function treeMesh(seed=0){const godot=GODOT_MODELS.get('tree');if(godot)return godot;const m=new Mesh();m.cylinder(0,0,0,.035,.48,CITY3D.wood,6);m.sphere(0,.72,0,.31,seed%3===0?'#7ca768':CITY3D.leaf,4,7,[1,1.25,1]);m.sphere(-.12,.8,.05,.19,'#92b775',3,6);return m;}
 function window(m:Mesh,x:number,y:number,z:number,w:number,h:number,side=false){m.box(x,y,z,side?.016:w,h,side?w:.016,CITY3D.glass);if(side)m.box(x+.012,y,z,.012,h,.018,'#f9f2e3');else m.box(x,y,z+.012,.018,h,.012,'#f9f2e3');}
 function windows(m:Mesh,w:number,d:number,height:number,floors=1){for(let f=0;f<floors;f++){const y=.2+f*(height-.1)/floors,h=Math.min(.23,(height-.15)/floors*.6);for(let k=0;k<3;k++){window(m,-w*.32+k*w*.32,y,d/2+.012,w*.22,h);window(m,w/2+.012,y,-d*.32+k*d*.32,d*.22,h,true);}}}
 function gable(m:Mesh,w:number,d:number,y:number,rise:number,color:string){const a:V3=[-w/2,y,-d/2],b:V3=[w/2,y,-d/2],c:V3=[w/2,y,d/2],e:V3=[-w/2,y,d/2],r:V3=[-w/2,y+rise,0],s:V3=[w/2,y+rise,0];m.quad(a,b,s,r,tint(color,.88));m.quad(r,s,c,e,color);m.triangle(b,c,s,CITY3D.wall);m.triangle(e,a,r,CITY3D.wall);m.beam(r,s,.014,tint(color,1.15));}
@@ -15,9 +15,9 @@ export type AnimatedLandmark={kind:Kind;x:number;z:number;scale:number;seed:numb
 export type BuildingLook={gardenItems?:string[];houseDecor?:number;units?:HousingUnit[]};
 function pergola(m:Mesh,x:number,z:number,w=.4){for(const dx of [-1,1])for(const dz of [-1,1])m.box(x+dx*w/2,.04,z+dz*w/2,.018,.4,.018,CITY3D.wood);for(let i=0;i<5;i++)m.box(x-w/2+i*w/4,.44,z,.025,.02,w+.06,'#d0b68d');}
 // Models exported from Godot (godot/render.gd), filled by the 3D view once fetched; until then the procedural model is used.
-export const GODOT_MODELS=new Map<Kind,Mesh>();
+export const GODOT_MODELS=new Map<string,Mesh>();
 export function godotMesh(buffer:ArrayBuffer){const m=new Mesh();m.data=Array.from(new Float32Array(buffer));return m;}
-export function buildingModel(b:Building,look:BuildingLook={}){const godot=GODOT_MODELS.get(b.kind);if(godot)return godot;const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
+export function buildingModel(b:Building,look:BuildingLook={}){const godot=GODOT_MODELS.get(godotAsset(b.kind,look.gardenItems));if(godot)return godot;const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
  if(kind==='tree')return treeMesh(seed);
  if(kind==='garden'){park(m,seed,look.gardenItems);return m;}
  if(kind==='bridge'){const span=b.bridgeSpan||1,axis=b.bridgeAxis==='y',p=(u:number,v:number,h:number):V3=>axis?[v,h,u]:[u,h,v];for(let i=0;i<span*6;i++){const u=-span/2+i/6,v=u+1/6,h=bridgeHeight(u,span)/30,k=bridgeHeight(v,span)/30;m.quad(p(u,-.42,h),p(u,.42,h),p(v,.42,k),p(v,-.42,k),CITY3D.road);for(const side of [-.43,.43]){m.beam(p(u,side,h+.09),p(v,side,k+.09),.012,'#d9ded7');if(i%2===0)m.beam(p(u,side,h),p(u,side,h+.09),.01,CITY3D.metal);}}return m;}

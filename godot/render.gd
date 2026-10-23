@@ -50,22 +50,40 @@ func _run() -> void:
 			continue
 		var node: Node = load("res://buildings/" + f).instantiate()
 		vp.add_child(node)
-		for i in 3:
-			await process_frame
-		await RenderingServer.frame_post_draw
-		var path := out.path_join(f.get_basename() + ".png")
-		var err := vp.get_texture().get_image().save_png(path)
-		print("rendered " if err == OK else "FAILED ", path)
-		_export_mesh(node, models.path_join(f.get_basename() + ".bin"))
+		# Optional extras: a node named item_<id> shows only with that extra, no_<id> only without it.
+		# Every combination is rendered as <kind>[-<id>...] with ids sorted, matching godotAsset() in lib/town.ts.
+		var toggles := node.find_children("item_*", "Node3D", true, false) + node.find_children("no_*", "Node3D", true, false)
+		var items: Array[String] = []
+		for t in toggles:
+			var id := _item_id(t)
+			if not items.has(id):
+				items.append(id)
+		items.sort()
+		for mask in 1 << items.size():
+			var chosen := items.filter(func(id): return mask & (1 << items.find(id)) != 0)
+			for t in toggles:
+				t.visible = chosen.has(_item_id(t)) == String(t.name).begins_with("item_")
+			var key := f.get_basename() + "".join(PackedStringArray(chosen.map(func(id): return "-" + id)))
+			for i in 3:
+				await process_frame
+			await RenderingServer.frame_post_draw
+			var path := out.path_join(key + ".png")
+			var err := vp.get_texture().get_image().save_png(path)
+			print("rendered " if err == OK else "FAILED ", path)
+			_export_mesh(node, models.path_join(key + ".bin"))
 		node.queue_free()
 	quit()
+
+func _item_id(toggle: Node) -> String:
+	return String(toggle.name).trim_prefix("item_").trim_prefix("no_")
 
 # Little-endian float32, 9 per vertex (position, normal, sRGB colour), 3 vertices per triangle:
 # the layout of Mesh.data in lib/city3d-mesh.ts. Only root CSG shapes are exported (Label3D text is skipped).
 func _export_mesh(scene: Node, path: String) -> void:
 	var out := PackedFloat32Array()
 	for csg in scene.find_children("*", "CSGShape3D", true, false):
-		if not csg.is_root_shape():
+		# Shapes named Ombra* are flat 2D drop shadows: the 3D view casts its own.
+		if not csg.is_root_shape() or not csg.is_visible_in_tree() or String(csg.name).begins_with("Ombra"):
 			continue
 		var baked: Array = csg.get_meshes()
 		if baked.is_empty():

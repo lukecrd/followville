@@ -1,0 +1,604 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="m0"]
+albedo_color = Color(0.5647, 0.8549, 0.3843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m1"]
+albedo_color = Color(0.5373, 0.8549, 0.3843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m2"]
+albedo_color = Color(0.4549, 0.8392, 0.3137, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m3"]
+albedo_color = Color(0.502, 0.8471, 0.3451, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m4"]
+albedo_color = Color(0.9451, 0.9098, 0.8392, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m5"]
+albedo_color = Color(0.1804, 0.6627, 0.1569, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m6"]
+albedo_color = Color(0.3804, 0.8275, 0.2706, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m7"]
+albedo_color = Color(0.6196, 0.5216, 0.4, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m8"]
+albedo_color = Color(0.3451, 0.8235, 0.251, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m9"]
+albedo_color = Color(0.2667, 0.7922, 0.1843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m10"]
+albedo_color = Color(0.3216, 0.7804, 0.1843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m11"]
+albedo_color = Color(0.898, 0.7059, 0.6471, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m12"]
+albedo_color = Color(0.9294, 0.8118, 0.5608, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m13"]
+albedo_color = Color(0.2275, 0.5843, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m14"]
+albedo_color = Color(0.1294, 0.5176, 0.149, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m15"]
+albedo_color = Color(0.9569, 0.8706, 0.698, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m16"]
+albedo_color = Color(0.8314, 0.7725, 0.6667, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m17"]
+albedo_color = Color(0.5608, 0.4706, 0.3647, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m18"]
+albedo_color = Color(0.8118, 0.6745, 0.498, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m19"]
+albedo_color = Color(0.5294, 0.8549, 0.3843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m20"]
+albedo_color = Color(0.2902, 0.7176, 0.2667, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m21"]
+albedo_color = Color(0.1255, 0.5255, 0.1412, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m22"]
+albedo_color = Color(0.7686, 0.6039, 0.4392, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m23"]
+albedo_color = Color(0.8353, 0.6941, 0.5451, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m24"]
+albedo_color = Color(0.8431, 0.8471, 0.7608, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m25"]
+albedo_color = Color(0.3451, 0.7529, 0.2, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m26"]
+albedo_color = Color(0.1882, 0.6235, 0.1451, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m27"]
+albedo_color = Color(0.9059, 0.6824, 0.6667, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m28"]
+albedo_color = Color(0.9451, 0.8314, 0.5412, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m29"]
+albedo_color = Color(0.7804, 0.7216, 0.8314, 1)
+roughness = 1.0
+
+[node name="Giardino" type="Node3D"]
+
+[node name="CSGBox3D0" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.0159, 0)
+size = Vector3(1.092, 0.0318, 1.092)
+material = SubResource("m0")
+
+[node name="CSGBox3D1" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.0329, 0)
+size = Vector3(0.988, 0.0021, 0.988)
+material = SubResource("m1")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+position = Vector3(-0.26, 0.035, -0.26)
+size = Vector3(0.416, 0.0021, 0.416)
+material = SubResource("m2")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+position = Vector3(0.325, 0.035, 0.338)
+size = Vector3(0.286, 0.0021, 0.26)
+material = SubResource("m3")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.0366, 0.091)
+size = Vector3(1.092, 0.0053, 0.13)
+material = SubResource("m4")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+position = Vector3(0.065, 0.0366, 0)
+size = Vector3(0.13, 0.0053, 1.092)
+material = SubResource("m4")
+
+[node name="CSGSphere3D6" type="CSGSphere3D" parent="."]
+position = Vector3(-0.39, 0.0552, 0.468)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D7" type="CSGSphere3D" parent="."]
+position = Vector3(-0.4118, 0.0853, 0.4826)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGSphere3D8" type="CSGSphere3D" parent="."]
+position = Vector3(-0.26, 0.0552, 0.468)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D9" type="CSGSphere3D" parent="."]
+position = Vector3(-0.2818, 0.0853, 0.4826)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGSphere3D10" type="CSGSphere3D" parent="."]
+position = Vector3(-0.13, 0.0552, 0.468)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D11" type="CSGSphere3D" parent="."]
+position = Vector3(-0.1518, 0.0853, 0.4826)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGSphere3D12" type="CSGSphere3D" parent="."]
+position = Vector3(-0.468, 0.0552, -0.39)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D13" type="CSGSphere3D" parent="."]
+position = Vector3(-0.4898, 0.0853, -0.3754)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGSphere3D14" type="CSGSphere3D" parent="."]
+position = Vector3(-0.468, 0.0552, -0.234)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D15" type="CSGSphere3D" parent="."]
+position = Vector3(-0.4898, 0.0853, -0.2194)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGCylinder3D16" type="CSGCylinder3D" parent="."]
+position = Vector3(-0.26, 0.2441, -0.26)
+radius = 0.0364
+height = 0.4246
+sides = 10
+material = SubResource("m7")
+
+[node name="CSGSphere3D17" type="CSGSphere3D" parent="."]
+position = Vector3(-0.26, 0.552, -0.26)
+scale = Vector3(1, 0.8573, 1)
+radius = 0.338
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D18" type="CSGSphere3D" parent="."]
+position = Vector3(-0.338, 0.605, -0.195)
+scale = Vector3(1, 0.8165, 1)
+radius = 0.208
+radial_segments = 10
+rings = 6
+material = SubResource("m8")
+
+[node name="CSGSphere3D19" type="CSGSphere3D" parent="."]
+position = Vector3(-0.156, 0.6581, -0.312)
+scale = Vector3(1, 0.6532, 1)
+radius = 0.13
+radial_segments = 10
+rings = 6
+material = SubResource("m9")
+
+[node name="no_gazebo" type="Node3D" parent="."]
+
+
+[node name="CSGSphere3D20" type="CSGSphere3D" parent="no_gazebo"]
+position = Vector3(0.364, 0.0552, -0.364)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.143
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D21" type="CSGSphere3D" parent="no_gazebo"]
+position = Vector3(0.3328, 0.1083, -0.3432)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.091
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="CSGSphere3D22" type="CSGSphere3D" parent="no_gazebo"]
+position = Vector3(0.416, 0.0552, -0.182)
+scale = Vector3(1, 0.5307, 1)
+radius = 0.1001
+radial_segments = 10
+rings = 6
+material = SubResource("m5")
+
+[node name="CSGSphere3D23" type="CSGSphere3D" parent="no_gazebo"]
+position = Vector3(0.3942, 0.0853, -0.1674)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0637
+radial_segments = 10
+rings = 6
+material = SubResource("m6")
+
+[node name="no_flowers" type="Node3D" parent="."]
+
+
+[node name="CSGSphere3D24" type="CSGSphere3D" parent="no_flowers"]
+position = Vector3(0.364, 0.0679, 0.364)
+scale = Vector3(1, 0.4899, 1)
+radius = 0.091
+radial_segments = 10
+rings = 6
+material = SubResource("m10")
+
+[node name="CSGSphere3D25" type="CSGSphere3D" parent="no_flowers"]
+position = Vector3(0.3328, 0.0977, 0.3588)
+scale = Vector3(1, 0.8165, 1)
+radius = 0.0338
+radial_segments = 10
+rings = 6
+material = SubResource("m11")
+
+[node name="CSGSphere3D26" type="CSGSphere3D" parent="no_flowers"]
+position = Vector3(0.3952, 0.0892, 0.3796)
+scale = Vector3(1, 0.8165, 1)
+radius = 0.0312
+radial_segments = 10
+rings = 6
+material = SubResource("m12")
+
+[node name="item_lights" type="Node3D" parent="."]
+
+
+[node name="CSGCylinder3D27" type="CSGCylinder3D" parent="item_lights"]
+position = Vector3(0.442, 0.0382, -0.468)
+radius = 0.0546
+height = 0.0127
+sides = 10
+material = SubResource("m13")
+
+[node name="CSGCylinder3D28" type="CSGCylinder3D" parent="item_lights"]
+position = Vector3(0.442, 0.2972, -0.468)
+radius = 0.0156
+height = 0.5307
+sides = 10
+material = SubResource("m14")
+
+[node name="CSGBox3D29" type="CSGBox3D" parent="item_lights"]
+position = Vector3(0.442, 0.5042, -0.468)
+size = Vector3(0.1248, 0.1168, 0.1248)
+material = SubResource("m15")
+
+[node name="CSGBox3D30" type="CSGBox3D" parent="item_lights"]
+position = Vector3(0.442, 0.5753, -0.468)
+size = Vector3(0.156, 0.0255, 0.156)
+material = SubResource("m14")
+
+[node name="CSGCylinder3D31" type="CSGCylinder3D" parent="item_lights"]
+position = Vector3(-0.468, 0.0382, 0.442)
+radius = 0.0546
+height = 0.0127
+sides = 10
+material = SubResource("m13")
+
+[node name="CSGCylinder3D32" type="CSGCylinder3D" parent="item_lights"]
+position = Vector3(-0.468, 0.2972, 0.442)
+radius = 0.0156
+height = 0.5307
+sides = 10
+material = SubResource("m14")
+
+[node name="CSGBox3D33" type="CSGBox3D" parent="item_lights"]
+position = Vector3(-0.468, 0.5042, 0.442)
+size = Vector3(0.1248, 0.1168, 0.1248)
+material = SubResource("m15")
+
+[node name="CSGBox3D34" type="CSGBox3D" parent="item_lights"]
+position = Vector3(-0.468, 0.5753, 0.442)
+size = Vector3(0.156, 0.0255, 0.156)
+material = SubResource("m14")
+
+[node name="item_gazebo" type="Node3D" parent="."]
+
+
+[node name="CSGBox3D35" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.325, 0.0361, -0.273)
+size = Vector3(0.338, 0.0085, 0.39)
+material = SubResource("m16")
+
+[node name="CSGCylinder3D36" type="CSGCylinder3D" parent="item_gazebo"]
+position = Vector3(0.182, 0.2654, -0.416)
+radius = 0.0169
+height = 0.4458
+sides = 10
+material = SubResource("m17")
+
+[node name="CSGCylinder3D37" type="CSGCylinder3D" parent="item_gazebo"]
+position = Vector3(0.468, 0.2654, -0.416)
+radius = 0.0169
+height = 0.4458
+sides = 10
+material = SubResource("m17")
+
+[node name="CSGCylinder3D38" type="CSGCylinder3D" parent="item_gazebo"]
+position = Vector3(0.182, 0.2654, -0.104)
+radius = 0.0169
+height = 0.4458
+sides = 10
+material = SubResource("m17")
+
+[node name="CSGCylinder3D39" type="CSGCylinder3D" parent="item_gazebo"]
+position = Vector3(0.468, 0.2654, -0.104)
+radius = 0.0169
+height = 0.4458
+sides = 10
+material = SubResource("m17")
+
+[node name="CSGBox3D40" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.325, 0.121, -0.351)
+size = Vector3(0.234, 0.0127, 0.078)
+material = SubResource("m18")
+
+[node name="CSGBox3D41" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.234, 0.0785, -0.364)
+size = Vector3(0.0156, 0.0722, 0.0156)
+material = SubResource("m17")
+
+[node name="CSGBox3D42" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.416, 0.0785, -0.364)
+size = Vector3(0.0156, 0.0722, 0.0156)
+material = SubResource("m17")
+
+[node name="CSGBox3D43" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.325, 0.4946, -0.273)
+size = Vector3(0.39, 0.0127, 0.442)
+material = SubResource("m19")
+
+[node name="CSGBox3D44" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.1716, 0.5047, -0.273)
+size = Vector3(0.0312, 0.0074, 0.442)
+material = SubResource("m20")
+
+[node name="CSGBox3D45" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.2496, 0.5047, -0.273)
+size = Vector3(0.0312, 0.0074, 0.442)
+material = SubResource("m20")
+
+[node name="CSGBox3D46" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.3276, 0.5047, -0.273)
+size = Vector3(0.0312, 0.0074, 0.442)
+material = SubResource("m20")
+
+[node name="CSGBox3D47" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.4056, 0.5047, -0.273)
+size = Vector3(0.0312, 0.0074, 0.442)
+material = SubResource("m20")
+
+[node name="CSGBox3D48" type="CSGBox3D" parent="item_gazebo"]
+position = Vector3(0.4836, 0.5047, -0.273)
+size = Vector3(0.0312, 0.0074, 0.442)
+material = SubResource("m20")
+
+[node name="item_bench" type="Node3D" parent="."]
+
+
+[node name="CSGBox3D49" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.39, 0.069, 0.2964)
+size = Vector3(0.0208, 0.0743, 0.0208)
+material = SubResource("m21")
+
+[node name="CSGBox3D50" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.39, 0.069, 0.4056)
+size = Vector3(0.0208, 0.0743, 0.0208)
+material = SubResource("m21")
+
+[node name="CSGBox3D51" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.39, 0.1645, 0.2808)
+size = Vector3(0.0208, 0.1168, 0.0156)
+material = SubResource("m21")
+
+[node name="CSGBox3D52" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.13, 0.069, 0.2964)
+size = Vector3(0.0208, 0.0743, 0.0208)
+material = SubResource("m21")
+
+[node name="CSGBox3D53" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.13, 0.069, 0.4056)
+size = Vector3(0.0208, 0.0743, 0.0208)
+material = SubResource("m21")
+
+[node name="CSGBox3D54" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.13, 0.1645, 0.2808)
+size = Vector3(0.0208, 0.1168, 0.0156)
+material = SubResource("m21")
+
+[node name="CSGBox3D55" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.26, 0.1125, 0.3562)
+size = Vector3(0.364, 0.0127, 0.1404)
+material = SubResource("m22")
+
+[node name="CSGBox3D56" type="CSGBox3D" parent="item_bench"]
+position = Vector3(-0.26, 0.1911, 0.2769)
+size = Vector3(0.364, 0.0807, 0.013)
+material = SubResource("m23")
+
+[node name="item_flowers" type="Node3D" parent="."]
+
+
+[node name="CSGBox3D57" type="CSGBox3D" parent="item_flowers"]
+position = Vector3(0.338, 0.035, 0.351)
+size = Vector3(0.26, 0.0064, 0.234)
+material = SubResource("m24")
+
+[node name="CSGBox3D58" type="CSGBox3D" parent="item_flowers"]
+position = Vector3(0.338, 0.0409, 0.351)
+size = Vector3(0.208, 0.0053, 0.182)
+material = SubResource("m25")
+
+[node name="CSGCylinder3D59" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.26, 0.0679, 0.286)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D60" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.26, 0.0977, 0.286)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m27")
+
+[node name="CSGCylinder3D61" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.364, 0.0679, 0.286)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D62" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.364, 0.0977, 0.286)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m28")
+
+[node name="CSGCylinder3D63" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.416, 0.0679, 0.364)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D64" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.416, 0.0977, 0.364)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m29")
+
+[node name="CSGCylinder3D65" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.312, 0.0679, 0.364)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D66" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.312, 0.0977, 0.364)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m27")
+
+[node name="CSGCylinder3D67" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.26, 0.0679, 0.416)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D68" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.26, 0.0977, 0.416)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m28")
+
+[node name="CSGCylinder3D69" type="CSGCylinder3D" parent="item_flowers"]
+position = Vector3(0.39, 0.0679, 0.442)
+radius = 0.0065
+height = 0.0509
+sides = 10
+material = SubResource("m26")
+
+[node name="CSGSphere3D70" type="CSGSphere3D" parent="item_flowers"]
+position = Vector3(0.39, 0.0977, 0.442)
+scale = Vector3(1, 0.5715, 1)
+radius = 0.0468
+radial_segments = 10
+rings = 6
+material = SubResource("m29")

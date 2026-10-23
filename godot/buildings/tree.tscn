@@ -1,0 +1,49 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="m0"]
+albedo_color = Color(0.4667, 0.6784, 0.2824, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m1"]
+albedo_color = Color(0.5412, 0.3529, 0.1686, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m2"]
+albedo_color = Color(0.3098, 0.6902, 0.2275, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m3"]
+albedo_color = Color(0.4235, 0.7804, 0.2627, 1)
+roughness = 1.0
+
+[node name="Albero" type="Node3D"]
+
+[node name="Ombra" type="CSGCylinder3D" parent="."]
+position = Vector3(0.02, 0.003, 0.02)
+radius = 0.2817
+height = 0.006
+sides = 20
+material = SubResource("m0")
+
+[node name="CSGCylinder3D0" type="CSGCylinder3D" parent="."]
+position = Vector3(0, 0.2477, 0)
+radius = 0.0347
+height = 0.4953
+sides = 10
+material = SubResource("m1")
+
+[node name="CSGSphere3D1" type="CSGSphere3D" parent="."]
+position = Vector3(0, 0.513, 0)
+scale = Vector3(1, 0.8165, 1)
+radius = 0.4333
+radial_segments = 10
+rings = 6
+material = SubResource("m2")
+
+[node name="CSGSphere3D2" type="CSGSphere3D" parent="."]
+position = Vector3(-0.13, 0.5838, 0.0867)
+scale = Vector3(1, 0.8165, 1)
+radius = 0.2167
+radial_segments = 10
+rings = 6
+material = SubResource("m3")
