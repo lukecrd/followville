@@ -1,7 +1,8 @@
 [gd_scene format=3]
 
 [sub_resource type="StandardMaterial3D" id="m0"]
-albedo_color = Color(0.4667, 0.6784, 0.2824, 1)
+shading_mode = 0
+albedo_color = Color(0.4706, 0.6824, 0.2784, 1)
 roughness = 1.0
 
 [sub_resource type="StandardMaterial3D" id="m1"]

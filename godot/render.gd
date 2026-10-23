@@ -59,18 +59,29 @@ func _run() -> void:
 			if not items.has(id):
 				items.append(id)
 		items.sort()
-		for mask in 1 << items.size():
-			var chosen := items.filter(func(id): return mask & (1 << items.find(id)) != 0)
-			for t in toggles:
-				t.visible = chosen.has(_item_id(t)) == String(t.name).begins_with("item_")
-			var key := f.get_basename() + "".join(PackedStringArray(chosen.map(func(id): return "-" + id)))
-			for i in 3:
-				await process_frame
-			await RenderingServer.frame_post_draw
-			var path := out.path_join(key + ".png")
-			var err := vp.get_texture().get_image().save_png(path)
-			print("rendered " if err == OK else "FAILED ", path)
-			_export_mesh(node, models.path_join(key + ".bin"))
+		# Owner colours: the material named "accent" takes each colour in the root's accent_colors
+		# metadata (hex without #), appended to the name as -<hex>.
+		var accent: StandardMaterial3D = null
+		for csg in node.find_children("*", "CSGShape3D", true, false):
+			var m = csg.get("material")
+			if m is StandardMaterial3D and m.resource_name == "accent":
+				accent = m
+		var accents: Array = Array(node.get_meta("accent_colors", PackedStringArray())) if accent else [""]
+		for color in accents:
+			if color != "":
+				accent.albedo_color = Color("#" + color)
+			for mask in 1 << items.size():
+				var chosen := items.filter(func(id): return mask & (1 << items.find(id)) != 0)
+				for t in toggles:
+					t.visible = chosen.has(_item_id(t)) == String(t.name).begins_with("item_")
+				var key: String = f.get_basename() + "".join(PackedStringArray(chosen.map(func(id): return "-" + id))) + ("-" + color if color != "" else "")
+				for i in 3:
+					await process_frame
+				await RenderingServer.frame_post_draw
+				var path := out.path_join(key + ".png")
+				var err := vp.get_texture().get_image().save_png(path)
+				print("rendered " if err == OK else "FAILED ", path)
+				_export_mesh(node, models.path_join(key + ".bin"))
 		node.queue_free()
 	quit()
 

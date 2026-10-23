@@ -49,9 +49,12 @@ export type BoardMessage={id:string;buildingId:string;title:string;body:string;a
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 // Buildings drawn from the Godot project (godot/render.gd): public/sprites/<kind>.png on the map, public/models/<kind>.bin in the 3D view.
-export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden'];
-// Asset name of one Godot render: gardens have one per combination of extras, e.g. garden-bench-flowers.
-export const godotAsset=(kind:Kind,items:string[]=[])=>kind+(kind==='garden'?[...new Set(items)].filter(i=>GARDEN_ITEMS.some(g=>g.id===i)).sort().map(i=>'-'+i).join(''):'');
+export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft'];
+// Godot kinds whose 'accent' material follows the owner's colour: one render per entry of colors.
+const GODOT_ACCENT:Kind[]=['loft'];
+// Asset name of a Godot render, or null when the building keeps its code-drawn art: gardens have one per
+// combination of extras (garden-bench-flowers), houses one per owner colour (loft-d88162).
+export const godotAsset=(kind:Kind,items:string[]=[],color='')=>!GODOT_KINDS.includes(kind)||(GODOT_ACCENT.includes(kind)&&!colors.includes(color))?null:kind+(kind==='garden'?[...new Set(items)].filter(i=>GARDEN_ITEMS.some(g=>g.id===i)).sort().map(i=>'-'+i).join(''):'')+(GODOT_ACCENT.includes(kind)?'-'+color.slice(1):'');
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports','powerplant'];
 export const TRANSPORT_KINDS=['road','bridge'];
 export function footprint(kind:string){return kind==='stadium'?{width:5,height:5}:kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}

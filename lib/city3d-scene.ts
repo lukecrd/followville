@@ -17,7 +17,9 @@ function pergola(m:Mesh,x:number,z:number,w=.4){for(const dx of [-1,1])for(const
 // Models exported from Godot (godot/render.gd), filled by the 3D view once fetched; until then the procedural model is used.
 export const GODOT_MODELS=new Map<string,Mesh>();
 export function godotMesh(buffer:ArrayBuffer){const m=new Mesh();m.data=Array.from(new Float32Array(buffer));return m;}
-export function buildingModel(b:Building,look:BuildingLook={}){const godot=GODOT_MODELS.get(godotAsset(b.kind,look.gardenItems));if(godot)return godot;const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
+// What residents bought for their house: flower box (1), pergola (2), pool (4).
+function homeDecor(m:Mesh,bd:number,decor=0){if(decor&1){m.box(-.16,.24,bd/2+.06,.22,.07,.1,'#c89473');m.sphere(-.16,.33,bd/2+.06,.09,'#cb94a3',3,6,[1,.5,.6]);}if(decor&2)pergola(m,.45,.23,.32);if(decor&4){m.box(-.4,.01,.35,.32,.035,.28,CITY3D.stone);m.box(-.4,.048,.35,.27,.008,.23,CITY3D.water);}}
+export function buildingModel(b:Building,look:BuildingLook={}){const key=godotAsset(b.kind,look.gardenItems,b.color),godot=key&&GODOT_MODELS.get(key);if(godot){if(!['cottage','villa','loft'].includes(b.kind)||!look.houseDecor)return godot;const m=new Mesh();m.append(godot);homeDecor(m,.65,look.houseDecor);return m;}const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
  if(kind==='tree')return treeMesh(seed);
  if(kind==='garden'){park(m,seed,look.gardenItems);return m;}
  if(kind==='bridge'){const span=b.bridgeSpan||1,axis=b.bridgeAxis==='y',p=(u:number,v:number,h:number):V3=>axis?[v,h,u]:[u,h,v];for(let i=0;i<span*6;i++){const u=-span/2+i/6,v=u+1/6,h=bridgeHeight(u,span)/30,k=bridgeHeight(v,span)/30;m.quad(p(u,-.42,h),p(u,.42,h),p(v,.42,k),p(v,-.42,k),CITY3D.road);for(const side of [-.43,.43]){m.beam(p(u,side,h+.09),p(v,side,k+.09),.012,'#d9ded7');if(i%2===0)m.beam(p(u,side,h),p(u,side,h+.09),.01,CITY3D.metal);}}return m;}
@@ -47,7 +49,7 @@ export function buildingModel(b:Building,look:BuildingLook={}){const godot=GODOT
  if(kind==='school'){m.box(0,height+.1,0,.02,.3,.02,CITY3D.metal);m.box(.09,height+.25,0,.16,.1,.01,'#eab36b');}
  if(kind==='cinema')m.box(0,.48,bd/2+.08,bw*.8,.16,.05,'#b86c70');
  if(kind==='library')for(let i=0;i<4;i++)m.box(-bw*.3+i*bw*.2,.14,bd/2+.033,.05,.25,.02,['#ba9173','#789f9d','#c29da8','#83a780'][i]);
- if(home&&((look.houseDecor||0)&1)){m.box(-.16,.24,bd/2+.06,.22,.07,.1,'#c89473');m.sphere(-.16,.33,bd/2+.06,.09,'#cb94a3',3,6,[1,.5,.6]);}if(home&&((look.houseDecor||0)&2))pergola(m,.45,.23,.32);if(home&&((look.houseDecor||0)&4)){m.box(-.4,.01,.35,.32,.035,.28,CITY3D.stone);m.box(-.4,.048,.35,.27,.008,.23,CITY3D.water);}if(!office&&!home)m.append(treeMesh(seed),bw*.6,.04,bd*.45,0,.35);
+ if(home)homeDecor(m,bd,look.houseDecor);if(!office&&!home)m.append(treeMesh(seed),bw*.6,.04,bd*.45,0,.35);
  return m;
 }
 export function vehicleModel(color:string,van=false){const m=new Mesh();m.box(0,.055,0,.36,.11,.18,color);m.box(van?-.025:0,.165,0,van?.25:.21,van?.16:.11,.16,color);m.box(.065,.18,.082,.12,.065,.008,CITY3D.glass);m.box(.11,.19,0,.008,.06,.14,CITY3D.glass);for(const x of [-.115,.115])for(const z of [-.095,.095])m.sphere(x,.065,z,.043,'#3f4c4d',3,6,[1,1,.48]);m.box(.182,.105,0,.01,.026,.13,'#fff0c0');m.box(-.182,.105,0,.01,.025,.12,'#cd7770');if(van)m.box(-.04,.33,0,.06,.025,.1,'#e7ae59');return m;}

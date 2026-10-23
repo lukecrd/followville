@@ -11,7 +11,7 @@ import {GardenArt} from './garden-art';
 import {bridgePlanner,canConnectRoad,bridgeElevation} from '../lib/bridges';
 import React,{memo,useEffect,useMemo,useRef,useCallback,useLayoutEffect,useId,useSyncExternalStore} from 'react';
 import {createPortal} from 'react-dom';
-import {Building,Kind,Resident,Decoration,HousingUnit,BASE_SIZE,buildable,CATALOG,buildingCells,buildingCenter,buildingFootprint,footprint,canPlace,TRANSPORT_KINDS,buildingScale,PEDESTRIAN_SCALE,CAR_SCALE,GODOT_KINDS,godotAsset} from '../lib/town';
+import {Building,Kind,Resident,Decoration,HousingUnit,BASE_SIZE,buildable,CATALOG,buildingCells,buildingCenter,buildingFootprint,footprint,canPlace,TRANSPORT_KINDS,buildingScale,PEDESTRIAN_SCALE,CAR_SCALE,godotAsset} from '../lib/town';
 import {roadCells,nextToRoad,cellKey,ROAD_DIRECTIONS,roadNeighbors,transportCells,networkRoads,RoadCell} from '../lib/roads';
 import {DistrictLabels} from './district-labels';
 import {LandmarkArt} from './landmark-art';
@@ -26,7 +26,8 @@ export function Tree({x=0,y=0,small=false}:{x?:number;y?:number;small?:boolean})
 // Godot renders (GODOT_KINDS) replace the SVG art.
 // The render is 1 Godot unit = 1 lot, centred on the footprint, so undo the per-kind art scale.
 export function BuildingArt({kind,color='#d88162',mini=false,bridgeAxis='x',bridgeSpan=1,units=[],flowerUnits=[],gardenItems=[]}:{kind:Kind;color?:string;mini?:boolean;bridgeAxis?:'x'|'y'|'cross';bridgeSpan?:number;units?:HousingUnit[];flowerUnits?:number[];gardenItems?:string[]}){
- if(GODOT_KINDS.includes(kind))return <image href={`/sprites/${godotAsset(kind,gardenItems)}.png`} x="-128" y="-200" width="256" height="256" transform={`scale(${1/buildingScale(kind)})`}/>;
+ const asset=godotAsset(kind,gardenItems,color);
+ if(asset)return <image href={`/sprites/${asset}.png`} x="-128" y="-200" width="256" height="256" transform={`scale(${1/buildingScale(kind)})`}/>;
  if(kind==='cottage'||kind==='villa'||kind==='loft')return <ModernHomeArt kind={kind} color={color} mini={mini}/>;
  if(kind==='bridge')return <BridgeArt color={color} axis={bridgeAxis} span={bridgeSpan}/>;
  if(kind==='station')return <StationArt color={color}/>;
