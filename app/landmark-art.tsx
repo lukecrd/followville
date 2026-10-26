@@ -77,13 +77,14 @@ function Giraffe(){return <g><path d="M-8-13.5v8M-4-11.5v8M1-9v8M4-7.5v8M6-32v-3
 function Elephant(){return <g className="elephant-walk"><path className="elephant-trunk" d="M12-11q2 7-2 10" stroke={MAP.roadEdge} strokeWidth="2.6" strokeLinecap="round" fill="none"/><path d="M-7-6v6M-1-5v6M4-6v6" stroke={MAP.roadEdge} strokeWidth="2.6" strokeLinecap="round" fill="none"/><ellipse cx="-2" cy="-11" rx="9.5" ry="6.5" fill={MAP.road}/><ellipse cx="8" cy="-13" rx="5" ry="5.5" fill={MAP.road}/><ellipse cx="5.5" cy="-13" rx="3.5" ry="4.5" fill={MAP.roadEdge}/></g>}
 // Paddock fence: posts on the four corners and mid-sides, one rail ring on top.
 const PADDOCK=[[-24,-24],[-10,-24],[4,-24],[4,-10],[4,4],[-10,4],[-24,4],[-24,-10]];
+// The zoo's moving animals; BuildingArt also draws them over the Godot sprite, which holds only the static parts.
+export function ZooMotion(){return <><g transform={`translate(${p(-12,-8,2)})`}><g className="giraffe-sway"><Giraffe/></g></g><g transform={`translate(${p(16,18,2)})`}><Elephant/></g></>;}
 function Zoo(){return <g className="zoo-art"><title>Zoo con recinto delle giraffe, elefante e laghetto</title><ParkBase path={[[-28,10,2],[-4,10,2],[-4,28,2]]}/>
  <ellipse cx="24" cy="2" rx="12" ry="6" fill={MAP.water}/>
  <path d={PADDOCK.map(([x,y])=>`M${p(x,y,2)}L${p(x,y,8)}`).join('')} stroke={MAP.amberDark} strokeWidth="1.6" strokeLinecap="round"/>
  <polyline points={poly([...PADDOCK,PADDOCK[0]].map(([x,y])=>[x,y,7]))} fill="none" stroke={MAP.amberDark} strokeWidth="1.1" strokeLinejoin="round"/>
  <g transform={`translate(${p(-4,-22,2)}) scale(.55)`}><MeadowTree/></g>
- <g transform={`translate(${p(-12,-8,2)})`}><g className="giraffe-sway"><Giraffe/></g></g>
- <g transform={`translate(${p(16,18,2)})`}><Elephant/></g>
+ <ZooMotion/>
  <g transform={`matrix(1 .5 0 1 ${p(-26,28,9)})`}><rect width="18" height="7" rx="1" fill={MAP.ink}/><text x="9" y="5.1" textAnchor="middle" fontFamily="Inter,ui-sans-serif,system-ui,sans-serif" fontSize="4.5" fontWeight="700" letterSpacing=".8" fill="#fff">ZOO</text></g>
 </g>}
 // Ferris wheel: hub 32 above the lawn, radius 20, so the lowest cabin clears the ground; cabins are centred on the rim.
@@ -91,6 +92,10 @@ function Zoo(){return <g className="zoo-art"><title>Zoo con recinto delle giraff
 const WHEEL=Array.from({length:6},(_,i)=>[Math.cos(i*Math.PI/3+Math.PI/6)*20,Math.sin(i*Math.PI/3+Math.PI/6)*20]);
 function Amusement({color}:{color:string}){return <g className="amusement-art"><title>Parco divertimenti con ruota panoramica e giostra</title><ParkBase path={[[-28,12,2],[12,12,2],[12,28,2]]}/>
  <Block x={-24} y={16} w={10} d={8} h={10} roof={color}/>
+ <AmusementMotion color={color}/>
+</g>}
+// Ferris wheel and carousel (they move); BuildingArt also draws them over the Godot sprite of the park.
+export function AmusementMotion({color}:{color:string}){return <>
  <g transform={`translate(${p(-14,-4,2)})`}>
   <g transform="translate(0 -32)"><g className="ferris-wheel">
    <circle r="20" fill="none" stroke={color} strokeWidth="2.2"/>
@@ -105,7 +110,7 @@ function Amusement({color}:{color:string}){return <g className="amusement-art"><
   <g className="carousel-top"><path d="M-10-2v-14M10-2v-14M0 4v-14" stroke={MAP.steel} strokeWidth="1.2"/>
   <path d="M0-31-16-16Q-8-10 0-10Z" fill={color}/><path d="M0-31 16-16Q8-10 0-10Z" fill={MAP.amber}/></g>
  </g>
-</g>}
+</>;}
 function Hospital({color}:{color:string}){return <g><Site large/><Block x={-23} y={-22} w={34} d={34} h={49} roof={color}/><Windows x={-23} y={-22} w={34} d={34} h={49} rows={4}/><ellipse cx={-6-(-5)} cy={(-6-5)*.5-49} rx="11" ry="5.5" fill={MAP.wall}/><text x="1" y="-52.5" textAnchor="middle" fontFamily="Inter,ui-sans-serif,system-ui,sans-serif" fontSize="7" fontWeight="700" fill={MAP.ink}>H</text><Block x={11} y={-8} w={15} d={30} h={20} roof={MAP.wall}/><g transform={plate(11.1,-6,44,false)}><rect width="11" height="11" rx="2" fill="#fff"/><path d="M4.3 2h2.4v3.3H10v2.4H6.7V11H4.3V7.7H1V5.3h3.3z" fill={MAP.red}/></g><Block x={-6} y={19} w={16} d={7} h={8} roof={MAP.wall}/></g>}
 function Sports({color}:{color:string}){return <g><Site large green/><polygon points={poly([[-25,-7,.2],[-1,-7,.2],[-1,23,.2],[-25,23,.2]])} fill={MAP.paving}/><polygon points={poly([[-22,-4,.3],[-4,-4,.3],[-4,20,.3],[-22,20,.3]])} fill={MAP.water}/><path d={[0,1,2].map(i=>`M${p(-20,-1+i*7,.3)}L${p(-6,-1+i*7,.3)}`).join('')} stroke={MAP.wall} strokeWidth=".8"/><polygon points={poly([[3,-5,.2],[25,-5,.2],[25,23,.2],[3,23,.2]])} fill={MAP.lawnSide}/><path transform="matrix(1 .5 -1 .5 0 -.2)" d="M3 9h22M6-2h16v22H6zM14-2v22" stroke="#fff" strokeWidth=".8" fill="none"/><Block x={-17} y={-25} w={37} d={15} h={18} roof={color}/><Windows x={-17} y={-25} w={37} d={15} h={18} rows={1}/></g>}
 // Power plant: striped chimney, steaming cooling tower, turbine hall and a fenced transformer yard by the entrance.

@@ -49,14 +49,16 @@ export type BoardMessage={id:string;buildingId:string;title:string;body:string;a
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 // Buildings drawn from the Godot project (godot/render.gd): public/sprites/<kind>.png on the map, public/models/<kind>.bin in the 3D view.
-export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','fountain','firestation','police','cinema','museum','watertower','mall','hospital','sports','powerplant'];
+export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','fountain','firestation','police','cinema','museum','watertower','mall','hospital','sports','powerplant','zoo','amusement','stadium'];
 // Godot kinds whose 'accent' material follows the building's colour: one render per entry of godotColors().
-const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','firestation','police','cinema','museum','watertower','mall','hospital','sports','powerplant'];
+const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','firestation','police','cinema','museum','watertower','mall','hospital','sports','powerplant','amusement','stadium'];
 // Colours an accent building can have: homes take an owner colour; other buildings also keep their catalogue colour
 // (seeded and owned buildings use colors, built ones the catalogue's).
 export const godotColors=(kind:Kind):string[]=>homes.includes(kind)?colors:[...new Set([...colors,CATALOG.find(c=>c.id===kind)?.color||colors[0]])];
 // Balcony railings of the Godot apartment (godot/buildings/apartment.tscn), in lots: each carries its unit's colour, so the map
 // and the 3D view draw them over the render. Odd units face +z, even units +x; floor i starts at y0+i*step.
+// Sprites framing zoom× the usual 256 SVG units (render.gd sprite_zoom metadata), for buildings wider than that.
+export const GODOT_SPRITE_ZOOM:Partial<Record<Kind,number>>={stadium:2};
 export const APARTMENT_RAILS={out:.42,half:.265,y0:.271,height:.126,step:.469};
 // Asset name of a Godot render, or null when the building keeps its code-drawn art: gardens have one per
 // combination of extras (garden-bench-flowers), houses one per owner colour (loft-d88162).

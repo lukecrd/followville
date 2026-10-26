@@ -50,6 +50,10 @@ func _run() -> void:
 			continue
 		var node: Node = load("res://buildings/" + f).instantiate()
 		vp.add_child(node)
+		# sprite_zoom metadata (GODOT_SPRITE_ZOOM in lib/town.ts): the sprite frames zoom× more world, for buildings wider than 256 SVG units.
+		var zoom: float = node.get_meta("sprite_zoom", 1.0)
+		cam.size = PX / unit * zoom
+		cam.v_offset = (ORIGIN.y - PX / 2.0) / unit * zoom
 		# Optional extras: a node named item_<id> shows only with that extra, no_<id> only without it.
 		# Every combination is rendered as <kind>[-<id>...] with ids sorted, matching godotAsset() in lib/town.ts.
 		var toggles := node.find_children("item_*", "Node3D", true, false) + node.find_children("no_*", "Node3D", true, false)
