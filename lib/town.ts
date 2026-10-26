@@ -49,15 +49,18 @@ export type BoardMessage={id:string;buildingId:string;title:string;body:string;a
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 // Buildings drawn from the Godot project (godot/render.gd): public/sprites/<kind>.png on the map, public/models/<kind>.bin in the 3D view.
-export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment'];
-// Godot kinds whose 'accent' material follows the owner's colour: one render per entry of colors.
-const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment'];
+export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library'];
+// Godot kinds whose 'accent' material follows the building's colour: one render per entry of godotColors().
+const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library'];
+// Colours an accent building can have: homes take an owner colour; other buildings also keep their catalogue colour
+// (seeded and owned buildings use colors, built ones the catalogue's).
+export const godotColors=(kind:Kind):string[]=>homes.includes(kind)?colors:[...new Set([...colors,CATALOG.find(c=>c.id===kind)?.color||colors[0]])];
 // Balcony railings of the Godot apartment (godot/buildings/apartment.tscn), in lots: each carries its unit's colour, so the map
 // and the 3D view draw them over the render. Odd units face +z, even units +x; floor i starts at y0+i*step.
 export const APARTMENT_RAILS={out:.42,half:.265,y0:.271,height:.126,step:.469};
 // Asset name of a Godot render, or null when the building keeps its code-drawn art: gardens have one per
 // combination of extras (garden-bench-flowers), houses one per owner colour (loft-d88162).
-export const godotAsset=(kind:Kind,items:string[]=[],color='')=>!GODOT_KINDS.includes(kind)||(GODOT_ACCENT.includes(kind)&&!colors.includes(color))?null:kind+(kind==='garden'?[...new Set(items)].filter(i=>GARDEN_ITEMS.some(g=>g.id===i)).sort().map(i=>'-'+i).join(''):'')+(GODOT_ACCENT.includes(kind)?'-'+color.slice(1):'');
+export const godotAsset=(kind:Kind,items:string[]=[],color='')=>!GODOT_KINDS.includes(kind)||(GODOT_ACCENT.includes(kind)&&!godotColors(kind).includes(color))?null:kind+(kind==='garden'?[...new Set(items)].filter(i=>GARDEN_ITEMS.some(g=>g.id===i)).sort().map(i=>'-'+i).join(''):'')+(GODOT_ACCENT.includes(kind)?'-'+color.slice(1):'');
 export const LARGE_BUILDINGS=['townhall','mall','hospital','stadium','zoo','amusement','sports','powerplant'];
 export const TRANSPORT_KINDS=['road','bridge'];
 export function footprint(kind:string){return kind==='stadium'?{width:5,height:5}:kind==='zoo'||kind==='amusement'?{width:3,height:3}:LARGE_BUILDINGS.includes(kind)?{width:2,height:2}:{width:1,height:1};}

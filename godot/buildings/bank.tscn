@@ -1,0 +1,153 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="m0"]
+shading_mode = 0
+albedo_color = Color(0.5059, 0.7294, 0.2941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m1"]
+albedo_color = Color(0.9176, 0.851, 0.6902, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m2"]
+albedo_color = Color(1, 0.9647, 0.8941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m3"]
+albedo_color = Color(0.2314, 0.5608, 0.7765, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m4"]
+albedo_color = Color(0.4235, 0.7843, 0.9569, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m5"]
+albedo_color = Color(0.1412, 0.2353, 0.3176, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m6"]
+albedo_color = Color(1, 0.7882, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m7"]
+albedo_color = Color(0.8902, 0.7804, 0.6118, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m8"]
+albedo_color = Color(0.2275, 0.6039, 0.2078, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m9"]
+albedo_color = Color(0.4353, 0.8118, 0.2471, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="accent"]
+resource_name = "accent"
+albedo_color = Color(0.8471, 0.5059, 0.3843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="red"]
+albedo_color = Color(0.9137, 0.3137, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="amberDark"]
+albedo_color = Color(0.8667, 0.5765, 0.0941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="lawn"]
+albedo_color = Color(0.4980, 0.8157, 0.2941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="brown"]
+albedo_color = Color(0.4784, 0.3216, 0.1882, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="white"]
+albedo_color = Color(1.0000, 1.0000, 1.0000, 1)
+roughness = 1.0
+
+[node name="Banca" type="Node3D"]
+metadata/accent_colors = PackedStringArray("d88162", "76938b", "b89ac0", "8aabc1", "c5a15b", "a8a48b")
+
+[node name="Ombra" type="CSGCylinder3D" parent="."]
+position = Vector3(0.148, 0.003, 0.0987)
+radius = 0.592
+height = 0.006
+sides = 24
+material = SubResource("m0")
+
+[node name="CSGBox3D0" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.006, 0)
+size = Vector3(0.7893, 0.0121, 0.7893)
+material = SubResource("m1")
+
+[node name="CSGBox3D1" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.3021, 0)
+size = Vector3(0.6907, 0.6042, 0.6413)
+material = SubResource("m2")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.6123, 0)
+size = Vector3(0.7055, 0.0161, 0.6561)
+material = SubResource("accent")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.2719, 0.3244)
+size = Vector3(0.6413, 0.5438, 0.0074)
+material = SubResource("m7")
+
+[node name="CSGCylinder3D4" type="CSGCylinder3D" parent="."]
+position = Vector3(-0.222, 0.2719, 0.37)
+radius = 0.0345
+height = 0.5438
+sides = 10
+material = SubResource("m2")
+
+[node name="CSGCylinder3D5" type="CSGCylinder3D" parent="."]
+position = Vector3(-0.074, 0.2719, 0.37)
+radius = 0.0345
+height = 0.5438
+sides = 10
+material = SubResource("m2")
+
+[node name="CSGCylinder3D6" type="CSGCylinder3D" parent="."]
+position = Vector3(0.074, 0.2719, 0.37)
+radius = 0.0345
+height = 0.5438
+sides = 10
+material = SubResource("m2")
+
+[node name="CSGCylinder3D7" type="CSGCylinder3D" parent="."]
+position = Vector3(0.222, 0.2719, 0.37)
+radius = 0.0345
+height = 0.5438
+sides = 10
+material = SubResource("m2")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.574, 0.3638)
+size = Vector3(0.6907, 0.0604, 0.0863)
+material = SubResource("m2")
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.6123, 0.3638)
+size = Vector3(0.7055, 0.0161, 0.1011)
+material = SubResource("accent")
+
+[node name="CSGCylinder3D10" type="CSGCylinder3D" parent="."]
+position = Vector3(0.3552, 0.423, -0.1973)
+rotation = Vector3(0, 0, 1.5708)
+radius = 0.1233
+height = 0.0123
+sides = 20
+material = SubResource("m6")
+
+[node name="Label3D11" type="Label3D" parent="."]
+position = Vector3(0.3651, 0.423, -0.1973)
+rotation = Vector3(0, 1.5708, 0)
+text = "€"
+font_size = 64
+outline_size = 0
+pixel_size = 0.0029
+modulate = Color(0.1412, 0.2353, 0.3176, 1)
+shaded = false

@@ -1,0 +1,156 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="m0"]
+shading_mode = 0
+albedo_color = Color(0.5059, 0.7294, 0.2941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m1"]
+albedo_color = Color(0.9176, 0.851, 0.6902, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m2"]
+albedo_color = Color(1, 0.9647, 0.8941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m3"]
+albedo_color = Color(0.2314, 0.5608, 0.7765, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m4"]
+albedo_color = Color(0.4235, 0.7843, 0.9569, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m5"]
+albedo_color = Color(0.1412, 0.2353, 0.3176, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m6"]
+albedo_color = Color(1, 0.7882, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m7"]
+albedo_color = Color(0.8902, 0.7804, 0.6118, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m8"]
+albedo_color = Color(0.2275, 0.6039, 0.2078, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m9"]
+albedo_color = Color(0.4353, 0.8118, 0.2471, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="accent"]
+resource_name = "accent"
+albedo_color = Color(0.8471, 0.5059, 0.3843, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="red"]
+albedo_color = Color(0.9137, 0.3137, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="amberDark"]
+albedo_color = Color(0.8667, 0.5765, 0.0941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="lawn"]
+albedo_color = Color(0.4980, 0.8157, 0.2941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="brown"]
+albedo_color = Color(0.4784, 0.3216, 0.1882, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="white"]
+albedo_color = Color(1.0000, 1.0000, 1.0000, 1)
+roughness = 1.0
+
+[node name="Mercato" type="Node3D"]
+metadata/accent_colors = PackedStringArray("d88162", "76938b", "b89ac0", "8aabc1", "c5a15b", "bc9860")
+
+[node name="Ombra" type="CSGCylinder3D" parent="."]
+position = Vector3(0.144, 0.003, 0.096)
+radius = 0.576
+height = 0.006
+sides = 24
+material = SubResource("m0")
+
+[node name="CSGBox3D0" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.0059, 0)
+size = Vector3(0.768, 0.0118, 0.768)
+material = SubResource("m1")
+
+[node name="CSGBox3D1" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.196, 0)
+size = Vector3(0.672, 0.3919, 0.624)
+material = SubResource("m2")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.3998, 0)
+size = Vector3(0.6864, 0.0157, 0.6384)
+material = SubResource("accent")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.2156, 0.3156)
+size = Vector3(0.528, 0.1176, 0.0072)
+material = SubResource("m4")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+position = Vector3(0.3396, 0.2156, 0)
+size = Vector3(0.0072, 0.1176, 0.48)
+material = SubResource("m3")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.2548, 0.384)
+rotation = Vector3(0.4985, 0, 0)
+size = Vector3(0.672, 0.012, 0.164)
+material = SubResource("accent")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="."]
+position = Vector3(-0.198, 0.2628, 0.384)
+rotation = Vector3(0.4985, 0, 0)
+size = Vector3(0.084, 0.012, 0.164)
+material = SubResource("white")
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="."]
+position = Vector3(-0.03, 0.2628, 0.384)
+rotation = Vector3(0.4985, 0, 0)
+size = Vector3(0.084, 0.012, 0.164)
+material = SubResource("white")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="."]
+position = Vector3(0.138, 0.2628, 0.384)
+rotation = Vector3(0.4985, 0, 0)
+size = Vector3(0.084, 0.012, 0.164)
+material = SubResource("white")
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="."]
+position = Vector3(-0.204, 0.0343, 0.456)
+size = Vector3(0.12, 0.0686, 0.072)
+material = SubResource("amberDark")
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="."]
+position = Vector3(-0.204, 0.0784, 0.456)
+size = Vector3(0.096, 0.0196, 0.048)
+material = SubResource("m9")
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="."]
+position = Vector3(0.012, 0.0343, 0.456)
+size = Vector3(0.12, 0.0686, 0.072)
+material = SubResource("amberDark")
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="."]
+position = Vector3(0.012, 0.0784, 0.456)
+size = Vector3(0.096, 0.0196, 0.048)
+material = SubResource("red")
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="."]
+position = Vector3(0.228, 0.0343, 0.456)
+size = Vector3(0.12, 0.0686, 0.072)
+material = SubResource("amberDark")
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="."]
+position = Vector3(0.228, 0.0784, 0.456)
+size = Vector3(0.096, 0.0196, 0.048)
+material = SubResource("m9")
