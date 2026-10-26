@@ -11,7 +11,7 @@ import {GardenArt} from './garden-art';
 import {bridgePlanner,canConnectRoad,bridgeElevation} from '../lib/bridges';
 import React,{memo,useEffect,useMemo,useRef,useCallback,useLayoutEffect,useId,useSyncExternalStore} from 'react';
 import {createPortal} from 'react-dom';
-import {Building,Kind,Resident,Decoration,HousingUnit,BASE_SIZE,buildable,CATALOG,buildingCells,buildingCenter,buildingFootprint,footprint,canPlace,TRANSPORT_KINDS,buildingScale,PEDESTRIAN_SCALE,CAR_SCALE,godotAsset} from '../lib/town';
+import {Building,Kind,Resident,Decoration,HousingUnit,BASE_SIZE,buildable,CATALOG,buildingCells,buildingCenter,buildingFootprint,footprint,canPlace,TRANSPORT_KINDS,buildingScale,PEDESTRIAN_SCALE,CAR_SCALE,godotAsset,APARTMENT_RAILS} from '../lib/town';
 import {roadCells,nextToRoad,cellKey,ROAD_DIRECTIONS,roadNeighbors,transportCells,networkRoads,RoadCell} from '../lib/roads';
 import {DistrictLabels} from './district-labels';
 import {LandmarkArt} from './landmark-art';
@@ -27,7 +27,7 @@ export function Tree({x=0,y=0,small=false}:{x?:number;y?:number;small?:boolean})
 // The render is 1 Godot unit = 1 lot, centred on the footprint, so undo the per-kind art scale.
 export function BuildingArt({kind,color='#d88162',mini=false,bridgeAxis='x',bridgeSpan=1,units=[],flowerUnits=[],gardenItems=[]}:{kind:Kind;color?:string;mini?:boolean;bridgeAxis?:'x'|'y'|'cross';bridgeSpan?:number;units?:HousingUnit[];flowerUnits?:number[];gardenItems?:string[]}){
  const asset=godotAsset(kind,gardenItems,color);
- if(asset)return <image href={`/sprites/${asset}.png`} x="-128" y="-200" width="256" height="256" transform={`scale(${1/buildingScale(kind)})`}/>;
+ if(asset)return <g transform={`scale(${1/buildingScale(kind)})`}><image href={`/sprites/${asset}.png`} x="-128" y="-200" width="256" height="256"/>{kind==='apartment'&&<ApartmentRails color={color} units={units} flowerUnits={flowerUnits}/>}</g>;
  if(kind==='cottage'||kind==='villa'||kind==='loft')return <ModernHomeArt kind={kind} color={color} mini={mini}/>;
  if(kind==='bridge')return <BridgeArt color={color} axis={bridgeAxis} span={bridgeSpan}/>;
  if(kind==='station')return <StationArt color={color}/>;
@@ -47,6 +47,9 @@ export function RailArt(){return <g><path d="M0-15 30 0 0 15-30 0z" fill={MAP.ra
 export function RoadArt({mask=5}:{mask?:number}){return <g><path d="M0-15 30 0 0 15-30 0z" fill={MAP.road} stroke={MAP.roadEdge} strokeWidth=".5"/>{[[15,7.5],[-15,7.5],[-15,-7.5],[15,-7.5]].map(([x,y],i)=>(mask&(1<<i))>0?<path key={i} d={`M0 0 ${x} ${y}`} fill="none" stroke={MAP.lane} strokeWidth="1.2" strokeDasharray="5 4"/>:null)}</g>}
 export function BankArt({color='#a8a48b'}:{color?:string}){return <LandmarkArt kind="bank" color={color}/>;}
 export function OfficeArt({color='#658fa7'}:{color?:string}){return <ModernOfficeArt color={color}/>;}
+// Railings over the Godot apartment render, projected like render.gd (1 lot = 60 SVG units wide, 30° pitch).
+function ApartmentRails({color,units,flowerUnits}:{color:string;units:HousingUnit[];flowerUnits:number[]}){const {out,half,y0,height,step}=APARTMENT_RAILS,iso=([x,y,z]:number[])=>`${30*(x-z)},${15*(x+z)-36.74*y}`;
+ return <>{[1,2,3,4,5,6].map(unit=>{const y=y0+(Math.ceil(unit/2)-1)*step,at=(along:number,h:number)=>unit%2?[along,h,out]:[out,h,along],u=units.find(u=>u.unit===unit);return <g key={unit}><polygon points={[at(-half,y),at(half,y),at(half,y+height),at(-half,y+height)].map(iso).join(' ')} fill={u?.username?u.color:color} opacity={u?.username?1:.55}/>{flowerUnits.includes(unit)&&[-.18,-.06].map(a=>{const [cx,cy]=iso(at(a,y+height)).split(',');return <circle key={a} cx={cx} cy={cy} r="1.7" fill={MAP.blossom}/>;})}</g>;})}</>;}
 export function ApartmentArt({color='#8fa6aa',units=[],flowerUnits=[]}:{color?:string;units?:HousingUnit[];flowerUnits?:number[]}){return <g transform="scale(.85)"><ellipse cy="7" rx="36" ry="15" fill={MAP.shadow} opacity=".12"/><path d="m-31-7 31 16 32-16L0-23z" fill={MAP.paving}/><path d="m-28-8 28 14v-92l-28-14z" fill={MAP.wall}/><path d="m0 6 28-14v-92L0-86z" fill={MAP.wallSide}/>{[0,1,2].map(floor=><g key={floor}>{[-1,1].map(side=>{const unit=floor*2+(side===-1?1:2),u=units.find(u=>u.unit===unit),base=-17-floor*26;return <g key={side} transform={`translate(0 ${base}) scale(${side===-1?1:-1} 1)`}><path d="m-24-12 20 10v-14l-20-10z" fill={MAP.glass}/><path d="m-26 0 24 12 5-3-24-12z" fill={MAP.paving}/><path d="m-26-7 24 12v7l-24-12z" fill={u?.username?u.color:color} opacity={u?.username?1:.55}/>{flowerUnits.includes(unit)&&<path d="M-20-8h.01M-14-5h.01" stroke={MAP.blossom} strokeWidth="5" strokeLinecap="round"/>}</g>})}<path d={`M-28 ${-23-floor*26} 0 ${-9-floor*26} 28 ${-23-floor*26}`} fill="none" stroke={MAP.wall} strokeWidth="1.2"/></g>)}<path d="m-30-101 30 15 30-15-30-16z" fill={color}/><path d="m-30-101 30 15 30-15v4L0-82-30-97z" fill={MAP.wallSide}/><path d="m-24-101 24 12 23-12-23-12z" fill={MAP.wall}/><path d="m-18-4 9 4v-13l-9-4z" fill={MAP.ink}/><path d="m10-94 6-3v-9l-6 3z" fill={MAP.wallSide}/><path d="m10-103 6-3-6-3-6 3z" fill={MAP.wall}/></g>}
 
 export type VanLivery={color:string;light:string;stripe:string;ladder?:boolean;label:string};

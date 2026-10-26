@@ -1,0 +1,202 @@
+[gd_scene format=3]
+
+[sub_resource type="StandardMaterial3D" id="m0"]
+shading_mode = 0
+albedo_color = Color(0.5059, 0.7294, 0.2941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m1"]
+albedo_color = Color(0.9176, 0.851, 0.6902, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m2"]
+albedo_color = Color(1, 0.9647, 0.8941, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m3"]
+albedo_color = Color(0.2314, 0.5608, 0.7765, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m4"]
+albedo_color = Color(0.4235, 0.7843, 0.9569, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m5"]
+albedo_color = Color(0.1412, 0.2353, 0.3176, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m6"]
+albedo_color = Color(1, 0.7882, 0.2353, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m7"]
+albedo_color = Color(0.8902, 0.7804, 0.6118, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m8"]
+albedo_color = Color(0.2275, 0.6039, 0.2078, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="m9"]
+albedo_color = Color(0.4353, 0.8118, 0.2471, 1)
+roughness = 1.0
+
+[sub_resource type="StandardMaterial3D" id="accent"]
+resource_name = "accent"
+albedo_color = Color(0.8471, 0.5059, 0.3843, 1)
+roughness = 1.0
+
+[node name="Palazzo" type="Node3D"]
+metadata/accent_colors = PackedStringArray("d88162", "76938b", "b89ac0", "8aabc1", "c5a15b")
+
+[node name="Ombra" type="CSGCylinder3D" parent="."]
+position = Vector3(0.1326, 0.003, 0.1326)
+radius = 0.5525
+height = 0.006
+sides = 24
+material = SubResource("m0")
+
+[node name="CSGBox3D0" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.0054, 0)
+size = Vector3(0.7072, 0.0108, 0.7072)
+material = SubResource("m1")
+
+[node name="CSGBox3D1" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.8301, 0)
+size = Vector3(0.6188, 1.6602, 0.6188)
+material = SubResource("m2")
+
+[node name="CSGBox3D2" type="CSGBox3D" parent="."]
+position = Vector3(0.0111, 0.1353, 0.3138)
+size = Vector3(0.1989, 0.2346, 0.0088)
+material = SubResource("m5")
+
+[node name="CSGBox3D3" type="CSGBox3D" parent="."]
+position = Vector3(0.084, 0.1353, 0.3182)
+size = Vector3(0.0088, 0.0541, 0.0044)
+material = SubResource("m6")
+
+[node name="CSGBox3D4" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.2599, 0.3647)
+size = Vector3(0.5304, 0.0217, 0.1105)
+material = SubResource("m1")
+
+[node name="CSGBox3D5" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.4872, 0.3127)
+size = Vector3(0.442, 0.3609, 0.0066)
+material = SubResource("m4")
+
+[node name="CSGBox3D6" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.4872, 0.3149)
+size = Vector3(0.0133, 0.3609, 0.0044)
+material = SubResource("m2")
+
+[node name="CSGBox3D7" type="CSGBox3D" parent="."]
+position = Vector3(0.3647, 0.2599, 0)
+size = Vector3(0.1105, 0.0217, 0.5304)
+material = SubResource("m1")
+
+[node name="CSGBox3D8" type="CSGBox3D" parent="."]
+position = Vector3(0.3127, 0.4872, 0)
+size = Vector3(0.0066, 0.3609, 0.442)
+material = SubResource("m3")
+
+[node name="CSGBox3D9" type="CSGBox3D" parent="."]
+position = Vector3(0.3149, 0.4872, 0)
+size = Vector3(0.0044, 0.3609, 0.0133)
+material = SubResource("m2")
+
+[node name="CSGBox3D10" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.2147, 0)
+size = Vector3(0.6365, 0.0144, 0.6365)
+material = SubResource("m7")
+
+[node name="CSGBox3D11" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.729, 0.3647)
+size = Vector3(0.5304, 0.0217, 0.1105)
+material = SubResource("m1")
+
+[node name="CSGBox3D12" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.9564, 0.3127)
+size = Vector3(0.442, 0.3609, 0.0066)
+material = SubResource("m4")
+
+[node name="CSGBox3D13" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.9564, 0.3149)
+size = Vector3(0.0133, 0.3609, 0.0044)
+material = SubResource("m2")
+
+[node name="CSGBox3D14" type="CSGBox3D" parent="."]
+position = Vector3(0.3647, 0.729, 0)
+size = Vector3(0.1105, 0.0217, 0.5304)
+material = SubResource("m1")
+
+[node name="CSGBox3D15" type="CSGBox3D" parent="."]
+position = Vector3(0.3127, 0.9564, 0)
+size = Vector3(0.0066, 0.3609, 0.442)
+material = SubResource("m3")
+
+[node name="CSGBox3D16" type="CSGBox3D" parent="."]
+position = Vector3(0.3149, 0.9564, 0)
+size = Vector3(0.0044, 0.3609, 0.0133)
+material = SubResource("m2")
+
+[node name="CSGBox3D17" type="CSGBox3D" parent="."]
+position = Vector3(0, 0.6839, 0)
+size = Vector3(0.6365, 0.0144, 0.6365)
+material = SubResource("m7")
+
+[node name="CSGBox3D18" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.1982, 0.3647)
+size = Vector3(0.5304, 0.0217, 0.1105)
+material = SubResource("m1")
+
+[node name="CSGBox3D19" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.4256, 0.3127)
+size = Vector3(0.442, 0.3609, 0.0066)
+material = SubResource("m4")
+
+[node name="CSGBox3D20" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.4256, 0.3149)
+size = Vector3(0.0133, 0.3609, 0.0044)
+material = SubResource("m2")
+
+[node name="CSGBox3D21" type="CSGBox3D" parent="."]
+position = Vector3(0.3647, 1.1982, 0)
+size = Vector3(0.1105, 0.0217, 0.5304)
+material = SubResource("m1")
+
+[node name="CSGBox3D22" type="CSGBox3D" parent="."]
+position = Vector3(0.3127, 1.4256, 0)
+size = Vector3(0.0066, 0.3609, 0.442)
+material = SubResource("m3")
+
+[node name="CSGBox3D23" type="CSGBox3D" parent="."]
+position = Vector3(0.3149, 1.4256, 0)
+size = Vector3(0.0044, 0.3609, 0.0133)
+material = SubResource("m2")
+
+[node name="CSGBox3D24" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.1531, 0)
+size = Vector3(0.6365, 0.0144, 0.6365)
+material = SubResource("m7")
+
+[node name="CSGBox3D25" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.6963, 0)
+size = Vector3(0.663, 0.0722, 0.663)
+material = SubResource("accent")
+
+[node name="CSGBox3D26" type="CSGBox3D" parent="."]
+position = Vector3(0, 1.7351, 0)
+size = Vector3(0.5304, 0.0054, 0.5304)
+material = SubResource("m2")
+
+[node name="CSGBox3D27" type="CSGBox3D" parent="."]
+position = Vector3(0.1326, 1.7955, -0.1436)
+size = Vector3(0.1768, 0.1263, 0.1547)
+material = SubResource("m2")
+
+[node name="CSGBox3D28" type="CSGBox3D" parent="."]
+position = Vector3(-0.1326, 1.7405, -0.0884)
+size = Vector3(0.1326, 0.0054, 0.1768)
+material = SubResource("m3")

@@ -1,6 +1,6 @@
 import {Mesh,type V3,tint} from './city3d-mesh';
 import {readAppearance,type CharacterAppearance} from './appearance';
-import {buildingCells,buildingCenter,buildingFootprint,godotAsset,type Building,type Kind,type HousingUnit,type Resident,type Decoration} from './town';
+import {buildingCells,buildingCenter,buildingFootprint,godotAsset,APARTMENT_RAILS,type Building,type Kind,type HousingUnit,type Resident,type Decoration} from './town';
 import {cellKey,networkRoads,roadCells,type RoadCell} from './roads';
 import {bridgeHeight} from './bridges';
 
@@ -19,7 +19,9 @@ export const GODOT_MODELS=new Map<string,Mesh>();
 export function godotMesh(buffer:ArrayBuffer){const m=new Mesh();m.data=Array.from(new Float32Array(buffer));return m;}
 // What residents bought for their house: flower box (1), pergola (2), pool (4).
 function homeDecor(m:Mesh,bd:number,decor=0){if(decor&1){m.box(-.16,.24,bd/2+.06,.22,.07,.1,'#c89473');m.sphere(-.16,.33,bd/2+.06,.09,'#cb94a3',3,6,[1,.5,.6]);}if(decor&2)pergola(m,.45,.23,.32);if(decor&4){m.box(-.4,.01,.35,.32,.035,.28,CITY3D.stone);m.box(-.4,.048,.35,.27,.008,.23,CITY3D.water);}}
-export function buildingModel(b:Building,look:BuildingLook={}){const key=godotAsset(b.kind,look.gardenItems,b.color),godot=key&&GODOT_MODELS.get(key);if(godot){if(!['cottage','villa','loft'].includes(b.kind)||!look.houseDecor)return godot;const m=new Mesh();m.append(godot);homeDecor(m,.65,look.houseDecor);return m;}const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
+// Railings of the Godot apartment, one per unit in the resident's colour (see APARTMENT_RAILS).
+function apartmentRails(m:Mesh,color:string,units:HousingUnit[]=[]){const {out,half,y0,height,step}=APARTMENT_RAILS;for(let unit=1;unit<=6;unit++){const y=y0+(Math.ceil(unit/2)-1)*step,u=units.find(u=>u.unit===unit),c=u?.username?u.color:color;if(unit%2)m.box(0,y,out,half*2,height,.015,c);else m.box(out,y,0,.015,height,half*2,c);}}
+export function buildingModel(b:Building,look:BuildingLook={}){const key=godotAsset(b.kind,look.gardenItems,b.color),godot=key&&GODOT_MODELS.get(key);if(godot){const apartment=b.kind==='apartment';if(!apartment&&(!['cottage','villa','loft'].includes(b.kind)||!look.houseDecor))return godot;const m=new Mesh();m.append(godot);if(apartment)apartmentRails(m,b.color||CITY3D.roof,look.units);else homeDecor(m,.65,look.houseDecor);return m;}const m=new Mesh(),f=buildingFootprint(b),w=f.width,d=f.height,seed=b.x*17+b.y*31,color=b.color||CITY3D.roof,kind=b.kind;
  if(kind==='tree')return treeMesh(seed);
  if(kind==='garden'){park(m,seed,look.gardenItems);return m;}
  if(kind==='bridge'){const span=b.bridgeSpan||1,axis=b.bridgeAxis==='y',p=(u:number,v:number,h:number):V3=>axis?[v,h,u]:[u,h,v];for(let i=0;i<span*6;i++){const u=-span/2+i/6,v=u+1/6,h=bridgeHeight(u,span)/30,k=bridgeHeight(v,span)/30;m.quad(p(u,-.42,h),p(u,.42,h),p(v,.42,k),p(v,-.42,k),CITY3D.road);for(const side of [-.43,.43]){m.beam(p(u,side,h+.09),p(v,side,k+.09),.012,'#d9ded7');if(i%2===0)m.beam(p(u,side,h),p(u,side,h+.09),.01,CITY3D.metal);}}return m;}
