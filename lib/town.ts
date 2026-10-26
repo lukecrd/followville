@@ -49,9 +49,9 @@ export type BoardMessage={id:string;buildingId:string;title:string;body:string;a
 export type Town={roadCuts?:{x:number;y:number}[];polls?:CivicPoll[];social?:SocialState;community?:CommunityState;boardMessages:BoardMessage[];name:string;buildings:Building[];units:HousingUnit[];coins:number;residents:Resident[];decorations:Decoration[];purchases:Purchase[];now:number;size:number;session:{canAdmin:boolean;self:string|null;signedIn:boolean};linkedResidents:{username:string}[];inviteCode?:string};
 export const homes=['cottage','villa','loft','apartment'];
 // Buildings drawn from the Godot project (godot/render.gd): public/sprites/<kind>.png on the map, public/models/<kind>.bin in the 3D view.
-export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library'];
+export const GODOT_KINDS:Kind[]=['townhall','station','tree','garden','loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','fountain','firestation','police','cinema','museum','watertower'];
 // Godot kinds whose 'accent' material follows the building's colour: one render per entry of godotColors().
-const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library'];
+const GODOT_ACCENT:Kind[]=['loft','cottage','villa','apartment','cafe','market','bank','office','school','clinic','library','firestation','police','cinema','museum','watertower'];
 // Colours an accent building can have: homes take an owner colour; other buildings also keep their catalogue colour
 // (seeded and owned buildings use colors, built ones the catalogue's).
 export const godotColors=(kind:Kind):string[]=>homes.includes(kind)?colors:[...new Set([...colors,CATALOG.find(c=>c.id===kind)?.color||colors[0]])];
